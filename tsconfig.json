@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "declaration":true,
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "removeComments": false,
+    "noImplicitAny": false,
+    "jsx": "react",
+    "lib":["es6","scripthost","dom","es2016.array.include","es2015.promise"]
+  },
+  "exclude": ["example","node_modules"]
+}

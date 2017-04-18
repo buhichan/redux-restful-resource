@@ -4,11 +4,7 @@
 "use strict";
 import {RestfulActionFactory,ActionDefinition} from "./Action"
 import {buildQuery} from "./Utils";
-import {Dispatch} from "redux";
-
-/**
- * Created by YS on 2016/11/4.
- */
+import {Action, Dispatch} from "redux";
 
 interface ResourceFilter{
     offset:number,
@@ -29,8 +25,8 @@ export type ActionName<ExtraActions> = "get"|"put"|"post"|"delete" | keyof Extra
 
 export interface RestfulResourceOptions<Model,Actions>{
     baseUrl?:string,
-    pathInStore:string[],
-    dispatch:Dispatch<any>,
+    pathInState:string[],
+    dispatch:(action:Action&{payload:any})=>void,
     getID?:(Model:Model)=>string|number,
     fetch?:typeof window.fetch,
     getDataFromResponse?:(res:any,actionName:ActionName<Actions>)=>Model[]|Model,
@@ -101,8 +97,8 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
                     if (!id) {
                         this.options.dispatch({
                             type: "@@resource/get",
-                            value: {
-                                pathInStore: this.options.pathInStore,
+                            payload: {
+                                pathInState: this.options.pathInState,
                                 key: this.options.getID,
                                 models,
                                 offset: this.options.getOffsetFromResponse?this.options.getOffsetFromResponse(res):null
@@ -111,8 +107,8 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
                     } else {
                         this.options.dispatch({
                             type: "@@resource/put",
-                            value: {
-                                pathInStore: this.options.pathInStore,
+                            payload: {
+                                pathInState: this.options.pathInState,
                                 key: this.options.getID,
                                 model: models
                             }
@@ -136,8 +132,8 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             if(this.options.getDataFromResponse(res,'delete')) {
                 this.options.dispatch({
                     type: "@@resource/delete",
-                    value: {
-                        pathInStore: this.options.pathInStore,
+                    payload: {
+                        pathInState: this.options.pathInState,
                         key: this.options.getID,
                         model: data,
                     }
@@ -158,8 +154,8 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             const model = this.options.getDataFromResponse(res,'put');
             this.options.dispatch({
                 type:"@@resource/put",
-                value:{
-                    pathInStore:this.options.pathInStore,
+                payload:{
+                    pathInState:this.options.pathInState,
                     key:this.options.getID,
                     model
                 }
@@ -178,8 +174,8 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             const model = this.options.getDataFromResponse(res,'post');
             this.options.dispatch({
                 type:"@@resource/post",
-                value:{
-                    pathInStore:this.options.pathInStore,
+                payload:{
+                    pathInState:this.options.pathInState,
                     key:this.options.getID,
                     model
                 }

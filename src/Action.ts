@@ -35,7 +35,7 @@ export function RestfulActionFactory<T>(option:ActionOption<T>){
     let ActionCacheMap = {} as ActionCache;
     let isRequesting;
     return function RestfulAction(data?,requestInit?:RequestInit) {
-        const nextRequestInit = {...requestInit};
+        const nextRequestInit:RequestInit = {...requestInit};
         let url = baseUrl + actionDef.path.replace(/(:\w+)(?=\/|$)/g,function(match){
                 if(match==='/id') return "/"+getID(data);
                 else return data[match.slice(1)] || ""
