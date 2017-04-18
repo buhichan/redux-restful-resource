@@ -10,7 +10,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var Action_1 = require("./Action");
 var Utils_1 = require("./Utils");
 var defaultOptions = {
@@ -68,8 +68,8 @@ var RestfulResource = (function () {
                 if (!id) {
                     _this.options.dispatch({
                         type: "@@resource/get",
-                        value: {
-                            pathInStore: _this.options.pathInStore,
+                        payload: {
+                            pathInState: _this.options.pathInState,
                             key: _this.options.getID,
                             models: models,
                             offset: _this.options.getOffsetFromResponse ? _this.options.getOffsetFromResponse(res) : null
@@ -79,8 +79,8 @@ var RestfulResource = (function () {
                 else {
                     _this.options.dispatch({
                         type: "@@resource/put",
-                        value: {
-                            pathInStore: _this.options.pathInStore,
+                        payload: {
+                            pathInState: _this.options.pathInState,
                             key: _this.options.getID,
                             model: models
                         }
@@ -96,16 +96,16 @@ var RestfulResource = (function () {
             this.lastGetAll = pending;
         return pending;
     };
-    RestfulResource.prototype["delete"] = function (data) {
+    RestfulResource.prototype.delete = function (data) {
         var _this = this;
         return this.options.fetch(this.options.baseUrl + this.options.getID(data) + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "DELETE" })).then(function (res) { return res.json(); }).then(function (res) {
             if (_this.options.getDataFromResponse(res, 'delete')) {
                 _this.options.dispatch({
                     type: "@@resource/delete",
-                    value: {
-                        pathInStore: _this.options.pathInStore,
+                    payload: {
+                        pathInState: _this.options.pathInState,
                         key: _this.options.getID,
-                        model: data
+                        model: data,
                     }
                 });
                 _this.markAsDirty();
@@ -121,8 +121,8 @@ var RestfulResource = (function () {
             var model = _this.options.getDataFromResponse(res, 'put');
             _this.options.dispatch({
                 type: "@@resource/put",
-                value: {
-                    pathInStore: _this.options.pathInStore,
+                payload: {
+                    pathInState: _this.options.pathInState,
                     key: _this.options.getID,
                     model: model
                 }
@@ -138,8 +138,8 @@ var RestfulResource = (function () {
             var model = _this.options.getDataFromResponse(res, 'post');
             _this.options.dispatch({
                 type: "@@resource/post",
-                value: {
-                    pathInStore: _this.options.pathInStore,
+                payload: {
+                    pathInState: _this.options.pathInState,
                     key: _this.options.getID,
                     model: model
                 }
@@ -156,3 +156,4 @@ var RestfulResource = (function () {
     return RestfulResource;
 }());
 exports.RestfulResource = RestfulResource;
+//# sourceMappingURL=RestfulResource.js.map

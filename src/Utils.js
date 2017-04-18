@@ -1,5 +1,5 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Created by YS on 2016/11/4.
  */
@@ -81,3 +81,4 @@ function buildQuery(params) {
         }).join("&");
 }
 exports.buildQuery = buildQuery;
+//# sourceMappingURL=Utils.js.map

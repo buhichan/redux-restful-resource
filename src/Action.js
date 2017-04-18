@@ -10,7 +10,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var Utils_1 = require("./Utils");
 function RestfulActionFactory(option) {
     var actionDef = option.actionDef, getDataFromResponse = option.getDataFromResponse, getID = option.getID, baseUrl = option.baseUrl;
@@ -50,3 +50,4 @@ function RestfulActionFactory(option) {
     };
 }
 exports.RestfulActionFactory = RestfulActionFactory;
+//# sourceMappingURL=Action.js.map
