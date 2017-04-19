@@ -125,7 +125,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
         return pending;
     }
     delete(data):Promise<boolean>{
-        return this.options.fetch(this.options.baseUrl+this.options.getID(data)+buildQuery(this.query),{
+        return this.options.fetch(this.options.baseUrl+"/"+this.options.getID(data)+buildQuery(this.query),{
             ...this.options.requestInit,
             method:"DELETE"
         }).then(res=>res.json()).then((res)=>{
@@ -146,7 +146,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
         })
     }
     put(data):Promise<Model>{
-        return this.options.fetch(this.options.baseUrl+this.options.getID(data)+buildQuery(this.query), {
+        return this.options.fetch(this.options.baseUrl+"/"+this.options.getID(data)+buildQuery(this.query), {
             ...this.options.requestInit,
             method:"PUT",
             body:JSON.stringify(data)
@@ -166,7 +166,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
         })
     }
     post(data):Promise<Model>{
-        return this.options.fetch(this.options.baseUrl+buildQuery(this.query),{
+        return this.options.fetch(this.options.baseUrl+"/"+buildQuery(this.query),{
             ...this.options.requestInit,
             method:"POST",
             body:JSON.stringify(data)

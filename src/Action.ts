@@ -36,9 +36,8 @@ export function RestfulActionFactory<T>(option:ActionOption<T>){
     let isRequesting;
     return function RestfulAction(data?,requestInit?:RequestInit) {
         const nextRequestInit:RequestInit = {...requestInit};
-        let url = baseUrl + actionDef.path.replace(/(:\w+)(?=\/|$)/g,function(match){
-                if(match==='/id') return "/"+getID(data);
-                else return data[match.slice(1)] || ""
+        let url = baseUrl +"/" + actionDef.path.replace(/(:\w+)(?=\/|$)/g,function(match){
+                return data[match.slice(1)] || ""
             });
         if(actionDef.getBody && data)
             nextRequestInit.body = JSON.stringify(actionDef.getBody(data));
