@@ -18,11 +18,8 @@ function RestfulActionFactory(option) {
     var isRequesting;
     return function RestfulAction(data, requestInit) {
         var nextRequestInit = __assign({}, requestInit);
-        var url = baseUrl + actionDef.path.replace(/(:\w+)(?=\/|$)/g, function (match) {
-            if (match === '/id')
-                return "/" + getID(data);
-            else
-                return data[match.slice(1)] || "";
+        var url = baseUrl + "/" + actionDef.path.replace(/(:\w+)(?=\/|$)/g, function (match) {
+            return data[match.slice(1)] || "";
         });
         if (actionDef.getBody && data)
             nextRequestInit.body = JSON.stringify(actionDef.getBody(data));

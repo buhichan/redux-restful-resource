@@ -98,7 +98,7 @@ var RestfulResource = (function () {
     };
     RestfulResource.prototype.delete = function (data) {
         var _this = this;
-        return this.options.fetch(this.options.baseUrl + this.options.getID(data) + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "DELETE" })).then(function (res) { return res.json(); }).then(function (res) {
+        return this.options.fetch(this.options.baseUrl + "/" + this.options.getID(data) + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "DELETE" })).then(function (res) { return res.json(); }).then(function (res) {
             if (_this.options.getDataFromResponse(res, 'delete')) {
                 _this.options.dispatch({
                     type: "@@resource/delete",
@@ -117,7 +117,7 @@ var RestfulResource = (function () {
     };
     RestfulResource.prototype.put = function (data) {
         var _this = this;
-        return this.options.fetch(this.options.baseUrl + this.options.getID(data) + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "PUT", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
+        return this.options.fetch(this.options.baseUrl + "/" + this.options.getID(data) + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "PUT", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
             var model = _this.options.getDataFromResponse(res, 'put');
             _this.options.dispatch({
                 type: "@@resource/put",
@@ -134,7 +134,7 @@ var RestfulResource = (function () {
     };
     RestfulResource.prototype.post = function (data) {
         var _this = this;
-        return this.options.fetch(this.options.baseUrl + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "POST", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
+        return this.options.fetch(this.options.baseUrl + "/" + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "POST", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
             var model = _this.options.getDataFromResponse(res, 'post');
             _this.options.dispatch({
                 type: "@@resource/post",
