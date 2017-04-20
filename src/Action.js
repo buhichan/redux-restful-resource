@@ -14,8 +14,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var Utils_1 = require("./Utils");
 function RestfulActionFactory(option) {
     var actionDef = option.actionDef, getDataFromResponse = option.getDataFromResponse, getID = option.getID, baseUrl = option.baseUrl;
-    var ActionCacheMap = {};
-    var isRequesting;
     return function RestfulAction(data, requestInit) {
         var nextRequestInit = __assign({}, requestInit);
         var url = baseUrl + "/" + actionDef.path.replace(/(:\w+)(?=\/|$)/g, function (match) {
@@ -27,25 +25,9 @@ function RestfulActionFactory(option) {
             nextRequestInit.body = JSON.stringify(actionDef.getBody(data));
         if (actionDef.getSearch)
             url += Utils_1.buildQuery(actionDef.getSearch(data));
-        if (actionDef.cacheTime) {
-            var cached = ActionCacheMap[url];
-            if (cached) {
-                var LastCachedTime = cached.LastCachedTime, cachedPromise = cached.cachedPromise;
-                if (Date.now() - LastCachedTime < actionDef.cacheTime)
-                    isRequesting = cachedPromise;
-            }
-        }
-        if (!isRequesting) {
-            isRequesting = option.fetch(url, nextRequestInit).then(function (res) { return res.json(); }).then(function (res) {
-                return getDataFromResponse(res, actionDef.key);
-            });
-            if (actionDef.cacheTime)
-                ActionCacheMap[url] = {
-                    cachedPromise: isRequesting,
-                    LastCachedTime: Date.now()
-                };
-        }
-        return isRequesting;
+        return option.fetch(url, nextRequestInit).then(function (res) { return res.json(); }).then(function (res) {
+            return getDataFromResponse(res, actionDef.key);
+        });
     };
 }
 exports.RestfulActionFactory = RestfulActionFactory;

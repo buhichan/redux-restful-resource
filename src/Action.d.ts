@@ -10,7 +10,6 @@ export interface ActionDefinition<T> {
     };
     getBody?(data: T): any;
     getBody?(data: T[]): any;
-    cacheTime?: number;
 }
 export interface ActionOption<T> {
     baseUrl: string;
@@ -19,4 +18,4 @@ export interface ActionOption<T> {
     getDataFromResponse: (res: any, actionName?: string) => T | T[];
     getID: any;
 }
-export declare function RestfulActionFactory<T>(option: ActionOption<T>): (data?: any, requestInit?: RequestInit) => any;
+export declare function RestfulActionFactory<T>(option: ActionOption<T>): (data?: any, requestInit?: RequestInit) => Promise<T | T[]>;
