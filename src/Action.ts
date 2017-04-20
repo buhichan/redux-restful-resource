@@ -52,7 +52,7 @@ export function RestfulActionFactory<T>(option:ActionOption<T>){
             }
         }
         if(!isRequesting) {
-            isRequesting = fetch(url, nextRequestInit).then(res => res.json()).then(res => {
+            isRequesting = option.fetch(url, nextRequestInit).then(res => res.json()).then(res => {
                 return getDataFromResponse(res, actionDef.key);
             });
             if (actionDef.cacheTime)
