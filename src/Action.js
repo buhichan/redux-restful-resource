@@ -34,7 +34,7 @@ function RestfulActionFactory(option) {
             }
         }
         if (!isRequesting) {
-            isRequesting = fetch(url, nextRequestInit).then(function (res) { return res.json(); }).then(function (res) {
+            isRequesting = option.fetch(url, nextRequestInit).then(function (res) { return res.json(); }).then(function (res) {
                 return getDataFromResponse(res, actionDef.key);
             });
             if (actionDef.cacheTime)
