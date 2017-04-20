@@ -39,6 +39,8 @@ export function RestfulActionFactory<T>(option:ActionOption<T>){
         let url = baseUrl +"/" + actionDef.path.replace(/(:\w+)(?=\/|$)/g,function(match){
                 return data[match.slice(1)] || ""
             });
+        if(actionDef.method)
+            nextRequestInit.method = actionDef.method.toUpperCase();
         if(actionDef.getBody && data)
             nextRequestInit.body = JSON.stringify(actionDef.getBody(data));
         if(actionDef.getSearch)
