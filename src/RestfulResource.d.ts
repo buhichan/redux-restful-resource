@@ -32,7 +32,7 @@ export declare type ActionInstance = (data?: any, requestInit?: RequestInit) => 
 export declare class RestfulResource<Model, Actions extends {
     [actionName: string]: ActionInstance;
 }> implements Resource<Model> {
-    private options;
+    options: RestfulResourceOptions<Model, Actions>;
     constructor(options: RestfulResourceOptions<Model, Actions>);
     query: {
         [key: string]: string;

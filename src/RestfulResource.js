@@ -26,9 +26,9 @@ var defaultOptions = {
 var RestfulResource = (function () {
     function RestfulResource(options) {
         var _this = this;
-        this.options = options;
         this.lastGetAll = null;
         var finalOptions = __assign({}, defaultOptions, options);
+        this.options = finalOptions;
         var actions = finalOptions.actions, overrideMethod = finalOptions.overrideMethod, baseUrl = finalOptions.baseUrl, fetch = finalOptions.fetch, getDataFromResponse = finalOptions.getDataFromResponse, getID = finalOptions.getID;
         if (actions) {
             this.actions = {};
