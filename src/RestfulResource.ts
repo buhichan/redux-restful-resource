@@ -39,7 +39,7 @@ export interface RestfulResourceOptions<Model,Actions>{
 
 const defaultOptions:Partial<RestfulResourceOptions<any,any>> = {
     baseUrl:"/",
-    fetch:window.fetch,
+    fetch:window.fetch.bind(window),
     cacheTime:5000,
     actions:[],
     overrideMethod:{},
