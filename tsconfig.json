@@ -11,6 +11,5 @@
     "noImplicitAny": false,
     "jsx": "react",
     "lib":["es6","scripthost","dom","es2016.array.include","es2015.promise"]
-  },
-  "exclude": ["example","node_modules"]
+  }
 }

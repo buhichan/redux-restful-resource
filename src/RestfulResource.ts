@@ -51,8 +51,10 @@ const defaultOptions:Partial<RestfulResourceOptions<any,any>> = {
 export type ActionInstance = (data?:any,requestInit?:RequestInit)=>Promise<any>;
 
 export class RestfulResource<Model,Actions extends {[actionName:string]:ActionInstance}> implements Resource<Model>{
-    constructor(private options:RestfulResourceOptions<Model,Actions>) {
+    options:RestfulResourceOptions<Model,Actions>;
+    constructor(options:RestfulResourceOptions<Model,Actions>) {
         const finalOptions:RestfulResourceOptions<Model,Actions> = {...defaultOptions,...options} as any;
+        this.options = finalOptions;
         const {actions,overrideMethod,baseUrl,fetch,getDataFromResponse,getID} = finalOptions;
         if(actions) {
             this.actions = {} as any;
