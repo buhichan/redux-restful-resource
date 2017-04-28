@@ -15,7 +15,7 @@ var Action_1 = require("./Action");
 var Utils_1 = require("./Utils");
 var defaultOptions = {
     baseUrl: "/",
-    fetch: window.fetch,
+    fetch: window.fetch.bind(window),
     cacheTime: 5000,
     actions: [],
     overrideMethod: {},
