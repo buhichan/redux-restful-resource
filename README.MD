@@ -1,41 +1,10 @@
-# A component using redux and ag-grid
+# A restful resource wrapper for typescript that auto sync your data with redux.
+*自动跟Redux的store同步数据的Restful Api工具类*
 
-Usage:
-
-```typescript jsx
-import {AgGridReact} from "ag-grid-react";
-import {AgGridReact} from "ag-grid-react";
-import {RestfulResource,ReduxAgGrid,setStore,GridReducer,GridFieldSchema} from "redux-ag-grid";
-import "ag-grid-react/build/themes/Bootstrap" //or ".../Material"
-const schema=[
-    {
-        key:"username",
-        type:"text",
-        label:"Username foo"
-    },{
-        key:"role",
-        type:"select",
-        label:"Role",
-        options:[
-            {
-                name:"Admin",
-                value:"0"
-            },{
-                name:"Guest",
-                value:"1"
-            }
-        ]
-    }
-];
-
-function NoneReduxStyle(){
-    return <ReduxAgGrid data={[]} schema={schema}>
-        <AgGridReact />
-    </ReduxAgGrid>
-}
-
-import {createStore,Store} from "redux";
+```typescript
+import {Store,createStore} from "redux";
 import {fromJS} from "immutable";
+import {RestfulResource,ResourceReducer} from "redux-restful-resource";
 
 let store:Store = createStore((state,action)=>{
     let res = state?state:fromJS({
@@ -45,54 +14,59 @@ let store:Store = createStore((state,action)=>{
     if(state && action && action.type==='jsAction'){
         console.log("received action:\n",action);
     }
-    return GridReducer(res,action);
+    return ResourceReducer(res,action);
 },fromJS({people:[],grid:{}}));
 
-let schema=[
-    {key:'name',label:"名字",type:"input"},
-    {key:'age',label:"年龄",type:'input',required:true},
-    {key:'gender',label:"性别",type:'select',options:[{name:"男",value:1},{name:"女",value:0}]},
-    {key:"birthDay",label:"生日",type:"date"}
-] as GridFieldSchema[];
+interface IUser{
+    gender
+}
 
-let actions = [{
-    call:(data)=>{
-        store.dispatch({
-            type:"jsAction",
-            data
-        } as any)
-    },
-    displayName:"jsAction",
-    isStatic:false,
-    useSelected:false,
-},"httpAction"];
-
-let UserResource = new RestfulResource({
-    url:"http://192.168.150.211:3000/api/people",
-    modelPath:['people'],
+let UserResource = new RestfulResource<IUser,{
+    someAction:Promise<IUser>
+}>({
+    baseUrl:"http://192.168.150.211:3000/api/people",
+    pathInState:['people'], // the location to store the immutable list of models in redux store.
+    //id:x=>x._id, //the model must have an id property, default is "id"
     dispatch:store.dispatch.bind(store),
-    apiType:"Loopback",
+    fetch:window.fetch,
     actions:[{
-        key:"httpAction",
-        displayName:"httpAction",
+        key:"someAction",
         method:"POST",
         path:":id/customAction2",
-        enabled:(data:any)=>{
-            return data.gender == 1;
+        getBody:(data)=>{
+            return data; // your request's body
         },
-        data:(data)=>{
-            return data;
+        getDataFromResponse(res){
+            return res.DataSet // get user list from response
         }
     }]
 });
 
-setStore(store);
-
-function ReduxStyle(){
-    return <ReduxAgGrid resource={UserResource} schema={schema}>
-        <AgGridReact />
-    </ReduxAgGrid>
-}
+UserResource.action.someAction.then((data)=>{
+    data.gender //type inferred
+});
+UserResource.delete({
+    id:1
+}).then(()=>{});
+UserResource.post({
+    gender:0
+}).then(()=>{});
+UserResource.get(1).then(data=>{
+    console.log(data.gender)
+});
+UserResource.get().then((data)=>{
+    return data.map(x=>{
+        return x.gender //type is inferred. 类型会被推导出来，不用声明IUser[]
+    })
+})
 ```
 
-Please refer to the example and typescript definition file as a simple document.
+# Redux
+
+```typescript
+store.getState().people.toArray(); 
+```
+*Be sure to register the ResourceReducer.*
+
+After you call "get", "post", "put", "delete",
+The redux store will be automatically synchronized.
