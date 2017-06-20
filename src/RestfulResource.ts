@@ -131,7 +131,8 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             ...this.options.requestInit,
             method:"DELETE"
         }).then(res=>res.json()).then((res)=>{
-            if(this.options.getDataFromResponse(res,'delete')) {
+            const resData = this.options.getDataFromResponse(res,'delete');
+            if(resData) {
                 this.options.dispatch({
                     type: "@@resource/delete",
                     payload: {
@@ -154,15 +155,17 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             body:JSON.stringify(data)
         }).then(res=>res.json()).then((res)=>{
             const model = this.options.getDataFromResponse(res,'put');
-            this.options.dispatch({
-                type:"@@resource/put",
-                payload:{
-                    pathInState:this.options.pathInState,
-                    key:this.options.getID,
-                    model
-                }
-            });
-            this.markAsDirty();
+            if(model) {
+                this.options.dispatch({
+                    type: "@@resource/put",
+                    payload: {
+                        pathInState: this.options.pathInState,
+                        key: this.options.getID,
+                        model:typeof model ==='object'?model:data
+                    }
+                });
+                this.markAsDirty();
+            }
             this.query = null;
             return model;
         })
@@ -174,15 +177,17 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             body:JSON.stringify(data)
         }).then(res=>res.json()).then((res)=>{
             const model = this.options.getDataFromResponse(res,'post');
-            this.options.dispatch({
-                type:"@@resource/post",
-                payload:{
-                    pathInState:this.options.pathInState,
-                    key:this.options.getID,
-                    model
-                }
-            });
-            this.markAsDirty();
+            if(model) {
+                this.options.dispatch({
+                    type: "@@resource/post",
+                    payload: {
+                        pathInState: this.options.pathInState,
+                        key: this.options.getID,
+                        model:typeof model ==='object'?model:data
+                    }
+                });
+                this.markAsDirty();
+            }
             this.query = null;
             return model;
         })
