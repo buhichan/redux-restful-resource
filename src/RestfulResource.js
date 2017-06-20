@@ -99,7 +99,8 @@ var RestfulResource = (function () {
     RestfulResource.prototype.delete = function (data) {
         var _this = this;
         return this.options.fetch(this.options.baseUrl + "/" + this.options.getID(data) + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "DELETE" })).then(function (res) { return res.json(); }).then(function (res) {
-            if (_this.options.getDataFromResponse(res, 'delete')) {
+            var resData = _this.options.getDataFromResponse(res, 'delete');
+            if (resData) {
                 _this.options.dispatch({
                     type: "@@resource/delete",
                     payload: {
@@ -119,15 +120,17 @@ var RestfulResource = (function () {
         var _this = this;
         return this.options.fetch(this.options.baseUrl + "/" + this.options.getID(data) + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "PUT", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
             var model = _this.options.getDataFromResponse(res, 'put');
-            _this.options.dispatch({
-                type: "@@resource/put",
-                payload: {
-                    pathInState: _this.options.pathInState,
-                    key: _this.options.getID,
-                    model: model
-                }
-            });
-            _this.markAsDirty();
+            if (model) {
+                _this.options.dispatch({
+                    type: "@@resource/put",
+                    payload: {
+                        pathInState: _this.options.pathInState,
+                        key: _this.options.getID,
+                        model: typeof model === 'object' ? model : data
+                    }
+                });
+                _this.markAsDirty();
+            }
             _this.query = null;
             return model;
         });
@@ -136,15 +139,17 @@ var RestfulResource = (function () {
         var _this = this;
         return this.options.fetch(this.options.baseUrl + "/" + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "POST", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
             var model = _this.options.getDataFromResponse(res, 'post');
-            _this.options.dispatch({
-                type: "@@resource/post",
-                payload: {
-                    pathInState: _this.options.pathInState,
-                    key: _this.options.getID,
-                    model: model
-                }
-            });
-            _this.markAsDirty();
+            if (model) {
+                _this.options.dispatch({
+                    type: "@@resource/post",
+                    payload: {
+                        pathInState: _this.options.pathInState,
+                        key: _this.options.getID,
+                        model: typeof model === 'object' ? model : data
+                    }
+                });
+                _this.markAsDirty();
+            }
             _this.query = null;
             return model;
         });
