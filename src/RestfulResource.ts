@@ -12,6 +12,7 @@ interface ResourceFilter{
     total?:number,
     query:{ [key:string]:string }
 }
+
 export interface Resource<Model>{
     get():Promise<Model[]>,
     get(id):Promise<Model>,
@@ -33,14 +34,12 @@ export interface RestfulResourceOptions<Model,Actions>{
     getOffsetFromResponse?:(res:any)=>number,
     actions?:(ActionDefinition<Model> & {key:keyof Actions})[],
     overrideMethod?: Partial<Resource<Model>>,
-    cacheTime?:number,
     requestInit?:RequestInit
 }
 
 const defaultOptions:Partial<RestfulResourceOptions<any,any>> = {
     baseUrl:"/",
     fetch:window.fetch.bind(window),
-    cacheTime:5000,
     actions:[],
     overrideMethod:{},
     getID:m=>m['id'],
@@ -77,8 +76,6 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
     }
     query:{[key:string]:string};
     actions: Actions;
-    private lastGetAll:Promise<Model[]> = null;
-    private lastCachedTime:number;
     withQuery(query){
         this.query = query;
         return this;
@@ -86,45 +83,19 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
     get():Promise<Model[]>
     get(id):Promise<Model>
     get(id?):Promise<Model[]|Model>{
-        if(!id){
-            if(!this.options.cacheTime && this.lastGetAll && Date.now()-this.lastCachedTime<this.options.cacheTime*1000){
-                return this.lastGetAll;
-            }
-        }
-        this.lastCachedTime = Date.now();
-        const pending = this.options.fetch(this.options.baseUrl+(id!==undefined?("/"+id):"")+buildQuery(this.query),this.options.requestInit)
+        return this.options.fetch(this.options.baseUrl+(id!==undefined?("/"+id):"")+buildQuery(this.query),this.options.requestInit)
             .then(res=>res.json()).then((res)=>{
                 const models = this.options.getDataFromResponse(res,'get') as any;
                 if(!this.query || !Object.keys(this.query).length) {
                     if (!id) {
-                        this.options.dispatch({
-                            type: "@@resource/get",
-                            payload: {
-                                pathInState: this.options.pathInState,
-                                key: this.options.getID,
-                                models,
-                                offset: this.options.getOffsetFromResponse?this.options.getOffsetFromResponse(res):null
-                            }
-                        });
+                        this.options.dispatch(this.setAllModelsAction(models, this.options.getOffsetFromResponse?this.options.getOffsetFromResponse(res):null));
                     } else {
-                        this.options.dispatch({
-                            type: "@@resource/put",
-                            payload: {
-                                pathInState: this.options.pathInState,
-                                key: this.options.getID,
-                                model: models
-                            }
-                        });
+                        this.options.dispatch(this.updateModelAction(models));
                     }
                 }
                 this.query = null;
                 return models;
-        },(e)=>{
-            this.lastGetAll = null;
         });
-        if(!id && !this.query)
-            this.lastGetAll = pending;
-        return pending;
     }
     delete(data):Promise<boolean>{
         return this.options.fetch(this.options.baseUrl+"/"+this.options.getID(data)+buildQuery(this.query),{
@@ -133,15 +104,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
         }).then(res=>res.json()).then((res)=>{
             const resData = this.options.getDataFromResponse(res,'delete');
             if(resData) {
-                this.options.dispatch({
-                    type: "@@resource/delete",
-                    payload: {
-                        pathInState: this.options.pathInState,
-                        key: this.options.getID,
-                        model: data,
-                    }
-                });
-                this.markAsDirty();
+                this.options.dispatch(this.deleteModelAction(data));
                 this.query = null;
                 return true;
             }
@@ -156,15 +119,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
         }).then(res=>res.json()).then((res)=>{
             const model = this.options.getDataFromResponse(res,'put');
             if(model) {
-                this.options.dispatch({
-                    type: "@@resource/put",
-                    payload: {
-                        pathInState: this.options.pathInState,
-                        key: this.options.getID,
-                        model:typeof model ==='object'?model:data
-                    }
-                });
-                this.markAsDirty();
+                this.options.dispatch(this.updateModelAction(typeof model ==='object'?model:data));
             }
             this.query = null;
             return model;
@@ -178,22 +133,52 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
         }).then(res=>res.json()).then((res)=>{
             const model = this.options.getDataFromResponse(res,'post');
             if(model) {
-                this.options.dispatch({
-                    type: "@@resource/post",
-                    payload: {
-                        pathInState: this.options.pathInState,
-                        key: this.options.getID,
-                        model:typeof model ==='object'?model:data
-                    }
-                });
-                this.markAsDirty();
+                this.options.dispatch(this.addModelAction(typeof model ==='object'?model:data));
             }
             this.query = null;
             return model;
         })
     }
-    private markAsDirty(){
-        this.lastGetAll = null;
-        this.lastCachedTime = 0;
+
+    public addModelAction(model){
+        return {
+            type: "@@resource/post",
+            payload: {
+                pathInState: this.options.pathInState,
+                key: this.options.getID,
+                model
+            }
+        };
+    }
+    public deleteModelAction(model){
+        return {
+            type: "@@resource/delete",
+            payload: {
+                pathInState: this.options.pathInState,
+                key: this.options.getID,
+                model,
+            }
+        }
+    }
+    public updateModelAction(model){
+        return {
+            type: "@@resource/put",
+            payload: {
+                pathInState: this.options.pathInState,
+                key: this.options.getID,
+                model
+            }
+        };
+    }
+    public setAllModelsAction(models, offset?){
+        return {
+            type: "@@resource/get",
+            payload: {
+                pathInState: this.options.pathInState,
+                key: this.options.getID,
+                models,
+                offset
+            }
+        }
     }
 }
