@@ -1,4 +1,12 @@
 "use strict";
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var Utils_1 = require("./Utils");
 /**
@@ -27,7 +35,9 @@ function ResourceReducer(rootState, action) {
             if (index < 0)
                 return Utils_1.deepSetState.apply(void 0, [rootState, list.push(payload.model)].concat(payload.pathInState));
             if (index >= 0) {
-                return Utils_1.deepSetState.apply(void 0, [rootState, list.set(index, payload.model)].concat(payload.pathInState));
+                return Utils_1.deepSetState.apply(void 0, [rootState, list.update(index, function (old) {
+                        return (__assign({}, old, payload.model));
+                    })].concat(payload.pathInState));
             }
             else
                 return rootState;
@@ -35,7 +45,7 @@ function ResourceReducer(rootState, action) {
             payload = action.payload;
             list = Utils_1.deepGetState.apply(void 0, [rootState].concat(payload.pathInState));
             if (!list)
-                list = immutable_1.List([]);
+                list = immutable_1.List();
             else if (!list.insert)
                 list = immutable_1.List(list);
             return Utils_1.deepSetState.apply(void 0, [rootState, list.insert(0, payload.model)].concat(payload.pathInState));

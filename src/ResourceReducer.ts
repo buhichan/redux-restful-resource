@@ -59,7 +59,7 @@ export function ResourceReducer<T>(rootState, action: { type: ActionTypes, paylo
             payload = action.payload as PutPayload<T>;
             list = deepGetState(rootState,...payload.pathInState);
             if(!list)
-                list = List() as List<T>;
+                list = List() as List<T> ;
             else if(!list.insert)
                 list = List(list);
             return deepSetState(rootState,list.insert(0,payload.model),...payload.pathInState);
