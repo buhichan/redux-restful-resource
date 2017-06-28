@@ -51,13 +51,15 @@ export function ResourceReducer<T>(rootState, action: { type: ActionTypes, paylo
             index = list.findIndex(entry=>payload.key(entry)===payload.key(payload.model));
             if(index<0) return deepSetState(rootState,list.push(payload.model),...payload.pathInState);
             if(index>=0) {
-                return deepSetState(rootState, list.set(index, payload.model), ...payload.pathInState);
+                return deepSetState(rootState, list.update(index, (old:any)=>{
+                    return ({...old,...payload.model})
+                }), ...payload.pathInState);
             }else return rootState;
         case "@@resource/post":
             payload = action.payload as PutPayload<T>;
             list = deepGetState(rootState,...payload.pathInState);
             if(!list)
-                list = List([]);
+                list = List() as List<T>;
             else if(!list.insert)
                 list = List(list);
             return deepSetState(rootState,list.insert(0,payload.model),...payload.pathInState);
