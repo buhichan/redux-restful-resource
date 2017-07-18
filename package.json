@@ -23,7 +23,7 @@
   "author": "buhi",
   "license": "MIT",
   "dependencies": {
-    "immutable": "^3.*||^4.*||4.0.0-rc.2",
+    "immutable": "^4.*||4.0.0-rc.2||^3.*",
     "redux": "*"
   }
 }
