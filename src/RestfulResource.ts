@@ -30,7 +30,7 @@ export interface RestfulResourceOptions<Model,Actions>{
     dispatch:(action:Action&{payload:any})=>void,
     getID?:(Model:Model)=>string|number,
     fetch?:typeof window.fetch,
-    getDataFromResponse?:(res:any,actionName:ActionName<Actions>)=>Model[]|Model,
+    getDataFromResponse?:(res:any,actionName:ActionName<Actions>)=>any,
     getOffsetFromResponse?:(res:any)=>number,
     actions?:(ActionDefinition<Model> & {key:keyof Actions})[],
     overrideMethod?: Partial<Resource<Model>>,
@@ -82,7 +82,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
     }
     get():Promise<Model[]>
     get(id):Promise<Model>
-    get(id?):Promise<Model[]|Model>{
+    get(id?):Promise<any>{
         return this.options.fetch(this.options.baseUrl+(id!==undefined?("/"+id):"")+buildQuery(this.query),this.options.requestInit)
             .then(res=>res.json()).then((res)=>{
                 const models = this.options.getDataFromResponse(res,'get') as any;

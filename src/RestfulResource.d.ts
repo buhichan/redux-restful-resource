@@ -1,0 +1,79 @@
+import { ActionDefinition } from "./Action";
+import { Action } from "redux";
+export interface Resource<Model> {
+    get(): Promise<Model[]>;
+    get(id: any): Promise<Model>;
+    post(model: Model): Promise<Model>;
+    put(model: Model): Promise<Model>;
+    delete(model: Model): Promise<boolean>;
+    withQuery(query: {
+        [key: string]: string;
+    }): Resource<Model>;
+}
+export declare type ActionName<ExtraActions> = "get" | "put" | "post" | "delete" | keyof ExtraActions;
+export interface RestfulResourceOptions<Model, Actions> {
+    baseUrl?: string;
+    pathInState: string[];
+    dispatch: (action: Action & {
+        payload: any;
+    }) => void;
+    getID?: (Model: Model) => string | number;
+    fetch?: typeof window.fetch;
+    getDataFromResponse?: (res: any, actionName: ActionName<Actions>) => any;
+    getOffsetFromResponse?: (res: any) => number;
+    actions?: (ActionDefinition<Model> & {
+        key: keyof Actions;
+    })[];
+    overrideMethod?: Partial<Resource<Model>>;
+    requestInit?: RequestInit;
+}
+export declare type ActionInstance = (data?: any, requestInit?: RequestInit) => Promise<any>;
+export declare class RestfulResource<Model, Actions extends {
+    [actionName: string]: ActionInstance;
+}> implements Resource<Model> {
+    options: RestfulResourceOptions<Model, Actions>;
+    constructor(options: RestfulResourceOptions<Model, Actions>);
+    query: {
+        [key: string]: string;
+    };
+    actions: Actions;
+    withQuery(query: any): this;
+    get(): Promise<Model[]>;
+    get(id: any): Promise<Model>;
+    delete(data: any): Promise<boolean>;
+    put(data: any): Promise<Model>;
+    post(data: any): Promise<Model>;
+    addModelAction(model: any): {
+        type: string;
+        payload: {
+            pathInState: string[];
+            key: (Model: Model) => string | number;
+            model: any;
+        };
+    };
+    deleteModelAction(model: any): {
+        type: string;
+        payload: {
+            pathInState: string[];
+            key: (Model: Model) => string | number;
+            model: any;
+        };
+    };
+    updateModelAction(model: any): {
+        type: string;
+        payload: {
+            pathInState: string[];
+            key: (Model: Model) => string | number;
+            model: any;
+        };
+    };
+    setAllModelsAction(models: any, offset?: any): {
+        type: string;
+        payload: {
+            pathInState: string[];
+            key: (Model: Model) => string | number;
+            models: any;
+            offset: any;
+        };
+    };
+}
