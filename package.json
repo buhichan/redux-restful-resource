@@ -1,6 +1,6 @@
 {
   "name": "redux-restful-resource",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A restful api client helper, connected to redux",
   "main": "index.js",
   "scripts": {
