@@ -51,12 +51,19 @@ var RestfulResource = (function () {
         this.query = query;
         return this;
     };
+    RestfulResource.prototype.afterRequest = function () {
+        if (this.options.clearQueryAfterRequest !== false)
+            this.query = null;
+    };
+    RestfulResource.prototype.isQueryPresent = function () {
+        return !this.query || !Object.keys(this.query).length;
+    };
     RestfulResource.prototype.get = function (id) {
         var _this = this;
         return this.options.fetch(this.options.baseUrl + (id !== undefined ? ("/" + id) : "") + Utils_1.buildQuery(this.query), this.options.requestInit)
             .then(function (res) { return res.json(); }).then(function (res) {
             var models = _this.options.getDataFromResponse(res, 'get');
-            if (!_this.query || !Object.keys(_this.query).length) {
+            if (_this.options.saveGetAllWhenFilterPresent || !_this.isQueryPresent()) {
                 if (!id) {
                     _this.options.dispatch(_this.setAllModelsAction(models, _this.options.getOffsetFromResponse ? _this.options.getOffsetFromResponse(res) : null));
                 }
@@ -64,6 +71,7 @@ var RestfulResource = (function () {
                     _this.options.dispatch(_this.updateModelAction(models));
                 }
             }
+            _this.afterRequest();
             _this.query = null;
             return models;
         });
@@ -74,7 +82,7 @@ var RestfulResource = (function () {
             var resData = _this.options.getDataFromResponse(res, 'delete');
             if (resData) {
                 _this.options.dispatch(_this.deleteModelAction(data));
-                _this.query = null;
+                _this.afterRequest();
                 return true;
             }
             return false;
@@ -87,7 +95,7 @@ var RestfulResource = (function () {
             if (model) {
                 _this.options.dispatch(_this.updateModelAction(typeof model === 'object' ? model : data));
             }
-            _this.query = null;
+            _this.afterRequest();
             return model;
         });
     };
@@ -98,7 +106,7 @@ var RestfulResource = (function () {
             if (model) {
                 _this.options.dispatch(_this.addModelAction(typeof model === 'object' ? model : data));
             }
-            _this.query = null;
+            _this.afterRequest();
             return model;
         });
     };

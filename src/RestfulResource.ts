@@ -34,7 +34,15 @@ export interface RestfulResourceOptions<Model,Actions>{
     getOffsetFromResponse?:(res:any)=>number,
     actions?:(ActionDefinition<Model> & {key:keyof Actions})[],
     overrideMethod?: Partial<Resource<Model>>,
-    requestInit?:RequestInit
+    requestInit?:RequestInit,
+    /**
+     * whether to save the result of get() when withQuery() is used; default to false;
+     */
+    saveGetAllWhenFilterPresent?:boolean
+    /**
+     * whether to clear query after requst, default to true;
+     */
+    clearQueryAfterRequest?:boolean
 }
 
 const defaultOptions:Partial<RestfulResourceOptions<any,any>> = {
@@ -80,19 +88,27 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
         this.query = query;
         return this;
     }
+    afterRequest(){
+        if(this.options.clearQueryAfterRequest!==false)
+            this.query = null;
+    }
+    isQueryPresent(){
+        return !this.query || !Object.keys(this.query).length
+    }
     get():Promise<Model[]>
     get(id):Promise<Model>
     get(id?):Promise<any>{
         return this.options.fetch(this.options.baseUrl+(id!==undefined?("/"+id):"")+buildQuery(this.query),this.options.requestInit)
             .then(res=>res.json()).then((res)=>{
                 const models = this.options.getDataFromResponse(res,'get') as any;
-                if(!this.query || !Object.keys(this.query).length) {
+                if(this.options.saveGetAllWhenFilterPresent || !this.isQueryPresent()){
                     if (!id) {
                         this.options.dispatch(this.setAllModelsAction(models, this.options.getOffsetFromResponse?this.options.getOffsetFromResponse(res):null));
                     } else {
                         this.options.dispatch(this.updateModelAction(models));
                     }
                 }
+                this.afterRequest();
                 this.query = null;
                 return models;
         });
@@ -105,7 +121,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             const resData = this.options.getDataFromResponse(res,'delete');
             if(resData) {
                 this.options.dispatch(this.deleteModelAction(data));
-                this.query = null;
+                this.afterRequest();
                 return true;
             }
             return false;
@@ -121,7 +137,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             if(model) {
                 this.options.dispatch(this.updateModelAction(typeof model ==='object'?model:data));
             }
-            this.query = null;
+            this.afterRequest();
             return model;
         })
     }
@@ -135,7 +151,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             if(model) {
                 this.options.dispatch(this.addModelAction(typeof model ==='object'?model:data));
             }
-            this.query = null;
+            this.afterRequest();
             return model;
         })
     }

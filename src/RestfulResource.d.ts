@@ -26,6 +26,14 @@ export interface RestfulResourceOptions<Model, Actions> {
     })[];
     overrideMethod?: Partial<Resource<Model>>;
     requestInit?: RequestInit;
+    /**
+     * whether to save the result of get() when withQuery() is used; default to false;
+     */
+    saveGetAllWhenFilterPresent?: boolean;
+    /**
+     * whether to clear query after requst, default to true;
+     */
+    clearQueryAfterRequest?: boolean;
 }
 export declare type ActionInstance = (data?: any, requestInit?: RequestInit) => Promise<any>;
 export declare class RestfulResource<Model, Actions extends {
@@ -38,6 +46,8 @@ export declare class RestfulResource<Model, Actions extends {
     };
     actions: Actions;
     withQuery(query: any): this;
+    afterRequest(): void;
+    isQueryPresent(): boolean;
     get(): Promise<Model[]>;
     get(id: any): Promise<Model>;
     delete(data: any): Promise<boolean>;
