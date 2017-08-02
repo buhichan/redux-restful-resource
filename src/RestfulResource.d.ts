@@ -5,6 +5,8 @@ export interface Resource<Model> {
     get(id: any): Promise<Model>;
     post(model: Model): Promise<Model>;
     put(model: Model): Promise<Model>;
+    batch?(): any;
+    head?(): any;
     delete(model: Model): Promise<boolean>;
     withQuery(query: {
         [key: string]: string;
@@ -47,12 +49,14 @@ export declare class RestfulResource<Model, Actions extends {
     actions: Actions;
     withQuery(query: any): this;
     afterRequest(): void;
-    isQueryPresent(): boolean;
+    isQueryPresent(): number;
     get(): Promise<Model[]>;
     get(id: any): Promise<Model>;
     delete(data: any): Promise<boolean>;
     put(data: any): Promise<Model>;
     post(data: any): Promise<Model>;
+    batch(): void;
+    head(): void;
     addModelAction(model: any): {
         type: string;
         payload: {

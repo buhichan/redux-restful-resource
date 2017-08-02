@@ -56,11 +56,15 @@ var RestfulResource = (function () {
             this.query = null;
     };
     RestfulResource.prototype.isQueryPresent = function () {
-        return !this.query || !Object.keys(this.query).length;
+        return this.query && Object.keys(this.query).length;
     };
     RestfulResource.prototype.get = function (id) {
         var _this = this;
-        return this.options.fetch(this.options.baseUrl + (id !== undefined ? ("/" + id) : "") + Utils_1.buildQuery(this.query), this.options.requestInit)
+        var extraURL = "";
+        if (id)
+            extraURL += "/" + id;
+        extraURL += Utils_1.buildQuery(this.query);
+        return this.options.fetch(this.options.baseUrl + extraURL, this.options.requestInit)
             .then(function (res) { return res.json(); }).then(function (res) {
             var models = _this.options.getDataFromResponse(res, 'get');
             if (_this.options.saveGetAllWhenFilterPresent || !_this.isQueryPresent()) {
@@ -109,6 +113,12 @@ var RestfulResource = (function () {
             _this.afterRequest();
             return model;
         });
+    };
+    RestfulResource.prototype.batch = function () {
+        throw new Error("Not implemented");
+    };
+    RestfulResource.prototype.head = function () {
+        throw new Error("Not implemented");
     };
     RestfulResource.prototype.addModelAction = function (model) {
         return {

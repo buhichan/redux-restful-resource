@@ -18,6 +18,8 @@ export interface Resource<Model>{
     get(id):Promise<Model>,
     post(model:Model):Promise<Model>,
     put(model:Model):Promise<Model>,
+    batch?()
+    head?()
     delete(model:Model):Promise<boolean>,
     withQuery(query:{[key:string]:string}):Resource<Model>
 }
@@ -93,12 +95,16 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             this.query = null;
     }
     isQueryPresent(){
-        return !this.query || !Object.keys(this.query).length
+        return this.query && Object.keys(this.query).length
     }
     get():Promise<Model[]>
     get(id):Promise<Model>
     get(id?):Promise<any>{
-        return this.options.fetch(this.options.baseUrl+(id!==undefined?("/"+id):"")+buildQuery(this.query),this.options.requestInit)
+        let extraURL = "";
+        if(id)
+            extraURL += "/"+id;
+        extraURL += buildQuery(this.query);
+        return this.options.fetch(this.options.baseUrl+extraURL,this.options.requestInit)
             .then(res=>res.json()).then((res)=>{
                 const models = this.options.getDataFromResponse(res,'get') as any;
                 if(this.options.saveGetAllWhenFilterPresent || !this.isQueryPresent()){
@@ -155,7 +161,12 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             return model;
         })
     }
-
+    batch(){
+        throw new Error("Not implemented")
+    }
+    head(){
+        throw new Error("Not implemented")
+    }
     public addModelAction(model){
         return {
             type: "@@resource/post",

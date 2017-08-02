@@ -18,7 +18,7 @@
   ],
   "devDependencies": {
     "@types/node": "^6.0.53",
-    "typescript": "2.4.2"
+    "typescript": "^2.4.2"
   },
   "author": "buhi",
   "license": "MIT",
