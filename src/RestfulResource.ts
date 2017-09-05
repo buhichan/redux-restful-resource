@@ -197,7 +197,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             }
         };
     }
-    public setAllModelsAction(models, offset?){
+    public setAllModelsAction(models, offset=null){
         return {
             type: "@@resource/get",
             payload: {

@@ -151,6 +151,7 @@ var RestfulResource = (function () {
         };
     };
     RestfulResource.prototype.setAllModelsAction = function (models, offset) {
+        if (offset === void 0) { offset = null; }
         return {
             type: "@@resource/get",
             payload: {
