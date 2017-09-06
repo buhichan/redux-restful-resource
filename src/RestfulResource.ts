@@ -34,7 +34,7 @@ export interface RestfulResourceOptions<Model,Actions>{
     fetch?:typeof window.fetch,
     getDataFromResponse?:(res:any,actionName:ActionName<Actions>)=>any,
     getOffsetFromResponse?:(res:any)=>number,
-    actions?:(ActionDefinition<Model> & {key:keyof Actions})[],
+    actions?:(ActionDefinition<any> & {key:keyof Actions})[],
     overrideMethod?: Partial<Resource<Model>>,
     requestInit?:RequestInit,
     /**

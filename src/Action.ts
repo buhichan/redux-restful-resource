@@ -5,14 +5,14 @@
 
 import {buildQuery} from "./Utils"
 
-export interface ActionDefinition<T>{
+export interface ActionDefinition<Args>{
     key:string,
     path:string,
     method?:string,
-    getSearch?(data:T):{[key:string]:string},
-    getSearch?(data:T[]):{[key:string]:string},
-    getBody?(data:T):any,
-    getBody?(data:T[]):any
+    getSearch?(data:Args):{[key:string]:string},
+    getSearch?(data:Args):{[key:string]:string},
+    getBody?(data:Args):any,
+    getBody?(data:Args):any
 }
 
 export interface ActionOption<T>{
