@@ -55,6 +55,8 @@ var RestfulResource = (function () {
         if (this.options.clearQueryAfterRequest !== false)
             this.query = null;
     };
+    RestfulResource.prototype.afterResponse = function () {
+    };
     RestfulResource.prototype.isQueryPresent = function () {
         return this.query && Object.keys(this.query).length;
     };
@@ -64,7 +66,7 @@ var RestfulResource = (function () {
         if (id)
             extraURL += "/" + id;
         extraURL += Utils_1.buildQuery(this.query);
-        return this.options.fetch(this.options.baseUrl + extraURL, this.options.requestInit)
+        var res = this.options.fetch(this.options.baseUrl + extraURL, this.options.requestInit)
             .then(function (res) { return res.json(); }).then(function (res) {
             var models = _this.options.getDataFromResponse(res, 'get');
             if (_this.options.saveGetAllWhenFilterPresent || !_this.isQueryPresent()) {
@@ -75,44 +77,52 @@ var RestfulResource = (function () {
                     _this.options.dispatch(_this.updateModelAction(models));
                 }
             }
-            _this.afterRequest();
+            _this.afterResponse();
             _this.query = null;
             return models;
         });
+        this.afterRequest();
+        return res;
     };
     RestfulResource.prototype.delete = function (data) {
         var _this = this;
-        return this.options.fetch(this.options.baseUrl + "/" + this.options.getID(data) + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "DELETE" })).then(function (res) { return res.json(); }).then(function (res) {
+        var res = this.options.fetch(this.options.baseUrl + "/" + this.options.getID(data) + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "DELETE" })).then(function (res) { return res.json(); }).then(function (res) {
             var resData = _this.options.getDataFromResponse(res, 'delete');
             if (resData) {
                 _this.options.dispatch(_this.deleteModelAction(data));
-                _this.afterRequest();
+                _this.afterResponse();
                 return true;
             }
             return false;
         });
+        this.afterRequest();
+        return res;
     };
     RestfulResource.prototype.put = function (data) {
         var _this = this;
-        return this.options.fetch(this.options.baseUrl + "/" + this.options.getID(data) + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "PUT", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
+        var res = this.options.fetch(this.options.baseUrl + "/" + this.options.getID(data) + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "PUT", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
             var model = _this.options.getDataFromResponse(res, 'put');
             if (model) {
                 _this.options.dispatch(_this.updateModelAction(typeof model === 'object' ? model : data));
             }
-            _this.afterRequest();
+            _this.afterResponse();
             return model;
         });
+        this.afterRequest();
+        return res;
     };
     RestfulResource.prototype.post = function (data) {
         var _this = this;
-        return this.options.fetch(this.options.baseUrl + "/" + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "POST", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
+        var res = this.options.fetch(this.options.baseUrl + "/" + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "POST", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
             var model = _this.options.getDataFromResponse(res, 'post');
             if (model) {
                 _this.options.dispatch(_this.addModelAction(typeof model === 'object' ? model : data));
             }
-            _this.afterRequest();
+            _this.afterResponse();
             return model;
         });
+        this.afterRequest();
+        return res;
     };
     RestfulResource.prototype.batch = function () {
         throw new Error("Not implemented");

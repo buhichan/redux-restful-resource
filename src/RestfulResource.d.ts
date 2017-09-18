@@ -49,6 +49,7 @@ export declare class RestfulResource<Model, Actions extends {
     actions: Actions;
     withQuery(query: any): this;
     afterRequest(): void;
+    afterResponse(): void;
     isQueryPresent(): number;
     get(): Promise<Model[]>;
     get(id: any): Promise<Model>;

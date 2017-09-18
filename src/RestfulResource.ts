@@ -94,6 +94,9 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
         if(this.options.clearQueryAfterRequest!==false)
             this.query = null;
     }
+    afterResponse(){
+
+    }
     isQueryPresent(){
         return this.query && Object.keys(this.query).length
     }
@@ -104,7 +107,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
         if(id)
             extraURL += "/"+id;
         extraURL += buildQuery(this.query);
-        return this.options.fetch(this.options.baseUrl+extraURL,this.options.requestInit)
+        const res = this.options.fetch(this.options.baseUrl+extraURL,this.options.requestInit)
             .then(res=>res.json()).then((res)=>{
                 const models = this.options.getDataFromResponse(res,'get') as any;
                 if(this.options.saveGetAllWhenFilterPresent || !this.isQueryPresent()){
@@ -114,27 +117,31 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
                         this.options.dispatch(this.updateModelAction(models));
                     }
                 }
-                this.afterRequest();
+                this.afterResponse();
                 this.query = null;
                 return models;
         });
+        this.afterRequest();
+        return res;
     }
     delete(data):Promise<boolean>{
-        return this.options.fetch(this.options.baseUrl+"/"+this.options.getID(data)+buildQuery(this.query),{
+        const res = this.options.fetch(this.options.baseUrl+"/"+this.options.getID(data)+buildQuery(this.query),{
             ...this.options.requestInit,
             method:"DELETE"
         }).then(res=>res.json()).then((res)=>{
             const resData = this.options.getDataFromResponse(res,'delete');
             if(resData) {
                 this.options.dispatch(this.deleteModelAction(data));
-                this.afterRequest();
+                this.afterResponse();
                 return true;
             }
             return false;
-        })
+        });
+        this.afterRequest();
+        return res;
     }
     put(data):Promise<Model>{
-        return this.options.fetch(this.options.baseUrl+"/"+this.options.getID(data)+buildQuery(this.query), {
+        const res = this.options.fetch(this.options.baseUrl+"/"+this.options.getID(data)+buildQuery(this.query), {
             ...this.options.requestInit,
             method:"PUT",
             body:JSON.stringify(data)
@@ -143,12 +150,14 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             if(model) {
                 this.options.dispatch(this.updateModelAction(typeof model ==='object'?model:data));
             }
-            this.afterRequest();
+            this.afterResponse();
             return model;
-        })
+        });
+        this.afterRequest();
+        return res;
     }
     post(data):Promise<Model>{
-        return this.options.fetch(this.options.baseUrl+"/"+buildQuery(this.query),{
+        const res = this.options.fetch(this.options.baseUrl+"/"+buildQuery(this.query),{
             ...this.options.requestInit,
             method:"POST",
             body:JSON.stringify(data)
@@ -157,9 +166,11 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             if(model) {
                 this.options.dispatch(this.addModelAction(typeof model ==='object'?model:data));
             }
-            this.afterRequest();
+            this.afterResponse();
             return model;
-        })
+        });
+        this.afterRequest();
+        return res;
     }
     batch(){
         throw new Error("Not implemented")
