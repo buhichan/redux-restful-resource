@@ -61,9 +61,13 @@ export type ActionInstance = (data?:any,requestInit?:RequestInit)=>Promise<any>;
 
 export class RestfulResource<Model,Actions extends {[actionName:string]:ActionInstance}> implements Resource<Model>{
     options:RestfulResourceOptions<Model,Actions>;
+    getBaseUrl:()=>string;
     constructor(options:RestfulResourceOptions<Model,Actions>) {
         const finalOptions:RestfulResourceOptions<Model,Actions> = {...defaultOptions,...options} as any;
         this.options = finalOptions;
+        this.getBaseUrl = this.options.baseUrl.includes(":")?()=>{
+            return fillParametersInPath(this.options.baseUrl,this.query)
+        }:()=>this.options.baseUrl
         const {actions,overrideMethod,baseUrl,fetch,getDataFromResponse,getID} = finalOptions;
         if(actions) {
             this.actions = {} as any;
@@ -100,9 +104,6 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
     isQueryPresent(){
         return this.query && Object.keys(this.query).length
     }
-    getBaseUrl = this.options.baseUrl.includes(":")?()=>{
-        return fillParametersInPath(this.options.baseUrl,this.query)
-    }:()=>this.options.baseUrl
     get():Promise<Model[]>
     get(id):Promise<Model>
     get(id?):Promise<any>{

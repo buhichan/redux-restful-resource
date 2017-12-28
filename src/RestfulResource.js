@@ -25,11 +25,11 @@ var defaultOptions = {
 var RestfulResource = (function () {
     function RestfulResource(options) {
         var _this = this;
+        var finalOptions = __assign({}, defaultOptions, options);
+        this.options = finalOptions;
         this.getBaseUrl = this.options.baseUrl.includes(":") ? function () {
             return Utils_1.fillParametersInPath(_this.options.baseUrl, _this.query);
         } : function () { return _this.options.baseUrl; };
-        var finalOptions = __assign({}, defaultOptions, options);
-        this.options = finalOptions;
         var actions = finalOptions.actions, overrideMethod = finalOptions.overrideMethod, baseUrl = finalOptions.baseUrl, fetch = finalOptions.fetch, getDataFromResponse = finalOptions.getDataFromResponse, getID = finalOptions.getID;
         if (actions) {
             this.actions = {};
