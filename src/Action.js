@@ -16,12 +16,7 @@ function RestfulActionFactory(option) {
     var actionDef = option.actionDef, getDataFromResponse = option.getDataFromResponse, getID = option.getID, baseUrl = option.baseUrl;
     return function RestfulAction(data, requestInit) {
         var nextRequestInit = __assign({}, requestInit);
-        var url = baseUrl + ("/" + actionDef.path).replace(/(\/:\w+)(?=\/|$)/g, function (match) {
-            if (!data)
-                return "";
-            var value = data[match.slice(2)];
-            return value ? ("/" + value) : "";
-        });
+        var url = Utils_1.fillParametersInPath(baseUrl + ("/" + actionDef.path), data);
         if (actionDef.method)
             nextRequestInit.method = actionDef.method.toUpperCase();
         if (actionDef.getBody && data)

@@ -67,3 +67,12 @@ export function buildQuery(params?:{[id:string]:any}):string{
         }
     }).join("&")
 }
+
+export function fillParametersInPath(path,data){
+    return path.replace(/(\/:\w+)(?=\/|$)/g,function(match){
+        if(!data)
+            return "";
+        const value = data[match.slice(2)];
+        return value?("/"+value) : ""
+    });
+}

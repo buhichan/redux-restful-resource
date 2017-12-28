@@ -25,6 +25,9 @@ var defaultOptions = {
 var RestfulResource = (function () {
     function RestfulResource(options) {
         var _this = this;
+        this.getBaseUrl = this.options.baseUrl.includes(":") ? function () {
+            return Utils_1.fillParametersInPath(_this.options.baseUrl, _this.query);
+        } : function () { return _this.options.baseUrl; };
         var finalOptions = __assign({}, defaultOptions, options);
         this.options = finalOptions;
         var actions = finalOptions.actions, overrideMethod = finalOptions.overrideMethod, baseUrl = finalOptions.baseUrl, fetch = finalOptions.fetch, getDataFromResponse = finalOptions.getDataFromResponse, getID = finalOptions.getID;
@@ -66,7 +69,7 @@ var RestfulResource = (function () {
         if (id)
             extraURL += "/" + id;
         extraURL += Utils_1.buildQuery(this.query);
-        var res = this.options.fetch(this.options.baseUrl + extraURL, this.options.requestInit)
+        var res = this.options.fetch(this.getBaseUrl() + extraURL, this.options.requestInit)
             .then(function (res) { return res.json(); }).then(function (res) {
             var models = _this.options.getDataFromResponse(res, 'get');
             if (_this.options.saveGetAllWhenFilterPresent || !_this.isQueryPresent()) {
@@ -86,7 +89,7 @@ var RestfulResource = (function () {
     };
     RestfulResource.prototype.delete = function (data) {
         var _this = this;
-        var res = this.options.fetch(this.options.baseUrl + "/" + this.options.getID(data) + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "DELETE" })).then(function (res) { return res.json(); }).then(function (res) {
+        var res = this.options.fetch(this.getBaseUrl() + "/" + this.options.getID(data) + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "DELETE" })).then(function (res) { return res.json(); }).then(function (res) {
             var resData = _this.options.getDataFromResponse(res, 'delete');
             if (resData) {
                 _this.options.dispatch(_this.deleteModelAction(data));
@@ -100,7 +103,7 @@ var RestfulResource = (function () {
     };
     RestfulResource.prototype.put = function (data) {
         var _this = this;
-        var res = this.options.fetch(this.options.baseUrl + "/" + this.options.getID(data) + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "PUT", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
+        var res = this.options.fetch(this.getBaseUrl() + "/" + this.options.getID(data) + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "PUT", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
             var model = _this.options.getDataFromResponse(res, 'put');
             if (model) {
                 _this.options.dispatch(_this.updateModelAction(typeof model === 'object' ? model : data));
@@ -113,7 +116,7 @@ var RestfulResource = (function () {
     };
     RestfulResource.prototype.post = function (data) {
         var _this = this;
-        var res = this.options.fetch(this.options.baseUrl + "/" + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "POST", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
+        var res = this.options.fetch(this.getBaseUrl() + "/" + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "POST", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
             var model = _this.options.getDataFromResponse(res, 'post');
             if (model) {
                 _this.options.dispatch(_this.addModelAction(typeof model === 'object' ? model : data));

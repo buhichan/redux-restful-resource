@@ -22,8 +22,10 @@
   },
   "author": "buhi",
   "license": "MIT",
-  "dependencies": {
-    "immutable": "*||^4.0.0-rc.2",
+  "peerDependencies": {
     "redux": "*"
+  },
+  "dependencies": {
+    "immutable": "4.0.0-rc.9||*"
   }
 }

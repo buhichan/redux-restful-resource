@@ -3,7 +3,7 @@
  */
 "use strict";
 import {RestfulActionFactory,ActionDefinition} from "./Action"
-import {buildQuery} from "./Utils";
+import {buildQuery, fillParametersInPath} from "./Utils";
 import {Action, Dispatch} from "redux";
 
 interface ResourceFilter{
@@ -100,6 +100,9 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
     isQueryPresent(){
         return this.query && Object.keys(this.query).length
     }
+    getBaseUrl = this.options.baseUrl.includes(":")?()=>{
+        return fillParametersInPath(this.options.baseUrl,this.query)
+    }:()=>this.options.baseUrl
     get():Promise<Model[]>
     get(id):Promise<Model>
     get(id?):Promise<any>{
@@ -107,7 +110,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
         if(id)
             extraURL += "/"+id;
         extraURL += buildQuery(this.query);
-        const res = this.options.fetch(this.options.baseUrl+extraURL,this.options.requestInit)
+        const res = this.options.fetch(this.getBaseUrl()+extraURL,this.options.requestInit)
             .then(res=>res.json()).then((res)=>{
                 const models = this.options.getDataFromResponse(res,'get') as any;
                 if(this.options.saveGetAllWhenFilterPresent || !this.isQueryPresent()){
@@ -125,7 +128,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
         return res;
     }
     delete(data):Promise<boolean>{
-        const res = this.options.fetch(this.options.baseUrl+"/"+this.options.getID(data)+buildQuery(this.query),{
+        const res = this.options.fetch(this.getBaseUrl()+"/"+this.options.getID(data)+buildQuery(this.query),{
             ...this.options.requestInit,
             method:"DELETE"
         }).then(res=>res.json()).then((res)=>{
@@ -141,7 +144,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
         return res;
     }
     put(data):Promise<Model>{
-        const res = this.options.fetch(this.options.baseUrl+"/"+this.options.getID(data)+buildQuery(this.query), {
+        const res = this.options.fetch(this.getBaseUrl()+"/"+this.options.getID(data)+buildQuery(this.query), {
             ...this.options.requestInit,
             method:"PUT",
             body:JSON.stringify(data)
@@ -157,7 +160,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
         return res;
     }
     post(data):Promise<Model>{
-        const res = this.options.fetch(this.options.baseUrl+"/"+buildQuery(this.query),{
+        const res = this.options.fetch(this.getBaseUrl()+"/"+buildQuery(this.query),{
             ...this.options.requestInit,
             method:"POST",
             body:JSON.stringify(data)

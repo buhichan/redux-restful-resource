@@ -51,6 +51,7 @@ export declare class RestfulResource<Model, Actions extends {
     afterRequest(): void;
     afterResponse(): void;
     isQueryPresent(): number;
+    getBaseUrl: () => any;
     get(): Promise<Model[]>;
     get(id: any): Promise<Model>;
     delete(data: any): Promise<boolean>;

@@ -81,4 +81,13 @@ function buildQuery(params) {
         }).join("&");
 }
 exports.buildQuery = buildQuery;
+function fillParametersInPath(path, data) {
+    return path.replace(/(\/:\w+)(?=\/|$)/g, function (match) {
+        if (!data)
+            return "";
+        var value = data[match.slice(2)];
+        return value ? ("/" + value) : "";
+    });
+}
+exports.fillParametersInPath = fillParametersInPath;
 //# sourceMappingURL=Utils.js.map
