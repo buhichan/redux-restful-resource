@@ -10,3 +10,4 @@ export declare function buildQuery(params?: {
     [id: string]: any;
 }): string;
 export declare function fillParametersInPath(path: any, data: any): any;
+export declare function stripTrailingSlash(path: string): string;

@@ -76,3 +76,9 @@ export function fillParametersInPath(path,data){
         return value?("/"+value) : ""
     });
 }
+
+export function stripTrailingSlash(path:string){
+    if(path && path.length>1 && path[path.length-1] === '/')
+        return path.slice(0,-1)
+    else return path
+}

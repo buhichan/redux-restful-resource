@@ -5,6 +5,7 @@
 import {RestfulActionFactory,ActionDefinition} from "./Action"
 import {buildQuery, fillParametersInPath} from "./Utils";
 import {Action, Dispatch} from "redux";
+import { stripTrailingSlash } from "../index";
 
 interface ResourceFilter{
     offset:number,
@@ -63,12 +64,15 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
     options:RestfulResourceOptions<Model,Actions>;
     getBaseUrl:()=>string;
     constructor(options:RestfulResourceOptions<Model,Actions>) {
-        const finalOptions:RestfulResourceOptions<Model,Actions> = {...defaultOptions,...options} as any;
-        this.options = finalOptions;
-        this.getBaseUrl = this.options.baseUrl.includes(":")?()=>{
-            return fillParametersInPath(this.options.baseUrl,this.query)
-        }:()=>this.options.baseUrl
-        const {actions,overrideMethod,baseUrl,fetch,getDataFromResponse,getID} = finalOptions;
+        this.options = {
+            ...defaultOptions,
+            ...options
+        };
+        this.options.baseUrl = stripTrailingSlash(this.options.baseUrl)
+        const {actions,overrideMethod,baseUrl,fetch,getDataFromResponse,getID} = this.options;
+        this.getBaseUrl = baseUrl.includes(":")?()=>{
+            return fillParametersInPath(baseUrl,this.query)
+        }:()=>baseUrl
         if(actions) {
             this.actions = {} as any;
             if(actions instanceof Array)
@@ -161,7 +165,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
         return res;
     }
     post(data):Promise<Model>{
-        const res = this.options.fetch(this.getBaseUrl()+"/"+buildQuery(this.query),{
+        const res = this.options.fetch(this.getBaseUrl()+buildQuery(this.query),{
             ...this.options.requestInit,
             method:"POST",
             body:JSON.stringify(data)

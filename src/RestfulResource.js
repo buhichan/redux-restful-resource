@@ -13,6 +13,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var Action_1 = require("./Action");
 var Utils_1 = require("./Utils");
+var index_1 = require("../index");
 var defaultOptions = {
     baseUrl: "/",
     fetch: window.fetch.bind(window),
@@ -25,12 +26,12 @@ var defaultOptions = {
 var RestfulResource = (function () {
     function RestfulResource(options) {
         var _this = this;
-        var finalOptions = __assign({}, defaultOptions, options);
-        this.options = finalOptions;
-        this.getBaseUrl = this.options.baseUrl.includes(":") ? function () {
-            return Utils_1.fillParametersInPath(_this.options.baseUrl, _this.query);
-        } : function () { return _this.options.baseUrl; };
-        var actions = finalOptions.actions, overrideMethod = finalOptions.overrideMethod, baseUrl = finalOptions.baseUrl, fetch = finalOptions.fetch, getDataFromResponse = finalOptions.getDataFromResponse, getID = finalOptions.getID;
+        this.options = __assign({}, defaultOptions, options);
+        this.options.baseUrl = index_1.stripTrailingSlash(this.options.baseUrl);
+        var _a = this.options, actions = _a.actions, overrideMethod = _a.overrideMethod, baseUrl = _a.baseUrl, fetch = _a.fetch, getDataFromResponse = _a.getDataFromResponse, getID = _a.getID;
+        this.getBaseUrl = baseUrl.includes(":") ? function () {
+            return Utils_1.fillParametersInPath(baseUrl, _this.query);
+        } : function () { return baseUrl; };
         if (actions) {
             this.actions = {};
             if (actions instanceof Array)
@@ -116,7 +117,7 @@ var RestfulResource = (function () {
     };
     RestfulResource.prototype.post = function (data) {
         var _this = this;
-        var res = this.options.fetch(this.getBaseUrl() + "/" + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "POST", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
+        var res = this.options.fetch(this.getBaseUrl() + Utils_1.buildQuery(this.query), __assign({}, this.options.requestInit, { method: "POST", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
             var model = _this.options.getDataFromResponse(res, 'post');
             if (model) {
                 _this.options.dispatch(_this.addModelAction(typeof model === 'object' ? model : data));

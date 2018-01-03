@@ -27,7 +27,7 @@ export function RestfulActionFactory<T>(option:ActionOption<T>){
     const {actionDef,getDataFromResponse,getID,baseUrl} = option;
     return function RestfulAction(data?,requestInit?:RequestInit) {
         const nextRequestInit:RequestInit = {...requestInit};
-        let url = fillParametersInPath(baseUrl +("/"+actionDef.path),data)
+        let url = fillParametersInPath(baseUrl+"/"+actionDef.path,data)
         if(actionDef.method)
             nextRequestInit.method = actionDef.method.toUpperCase();
         if(actionDef.getBody && data)
