@@ -86,7 +86,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
                 });
         }
         //todo: is there a better way?
-        ['get','count','delete','post','put','addModelAction','deleteModelAction','updateModelAction','setAllModelsAction'].forEach(method=>{
+        ['get','delete','post','put','addModelAction','deleteModelAction','updateModelAction','setAllModelsAction'].forEach(method=>{
             this[method] = (overrideMethod[method] || this[method]).bind(this)
         })
     }

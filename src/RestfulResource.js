@@ -46,7 +46,7 @@ var RestfulResource = /** @class */ (function () {
                 });
         }
         //todo: is there a better way?
-        ['get', 'count', 'delete', 'post', 'put', 'addModelAction', 'deleteModelAction', 'updateModelAction', 'setAllModelsAction'].forEach(function (method) {
+        ['get', 'delete', 'post', 'put', 'addModelAction', 'deleteModelAction', 'updateModelAction', 'setAllModelsAction'].forEach(function (method) {
             _this[method] = (overrideMethod[method] || _this[method]).bind(_this);
         });
     }
