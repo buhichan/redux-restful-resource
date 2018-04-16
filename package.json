@@ -18,14 +18,16 @@
   ],
   "devDependencies": {
     "@types/node": "^6.0.53",
-    "typescript": "^2.4.2"
+    "immutable": "4.0.0-rc.9",
+    "typescript": "^2.8.1"
   },
   "author": "buhi",
   "license": "MIT",
   "peerDependencies": {
+    "immutable": "4.0.0-rc.9||*",
     "redux": "*"
   },
-  "dependencies": {
+  "resolutions": {
     "immutable": "4.0.0-rc.9||*"
   }
 }

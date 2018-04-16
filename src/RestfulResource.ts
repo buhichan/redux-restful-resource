@@ -4,7 +4,6 @@
 "use strict";
 import {RestfulActionFactory,ActionDefinition} from "./Action"
 import {buildQuery, fillParametersInPath} from "./Utils";
-import {Action, Dispatch} from "redux";
 import { stripTrailingSlash } from "../index";
 
 interface ResourceFilter{
@@ -30,7 +29,7 @@ export type ActionName<ExtraActions> = "get"|"put"|"post"|"delete" | keyof Extra
 export interface RestfulResourceOptions<Model,Actions>{
     baseUrl?:string,
     pathInState:string[],
-    dispatch:(action:Action&{payload:any})=>void,
+    dispatch:(action:any)=>void,
     getID?:(Model:Model)=>string|number,
     fetch?:typeof window.fetch,
     getDataFromResponse?:(res:any,actionName:ActionName<Actions>)=>any,
@@ -86,11 +85,10 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
                     })
                 });
         }
-        if(overrideMethod)
-            ['get','count','delete','post','put'].forEach(method=>{
-                if(overrideMethod[method])
-                    this[method] = overrideMethod[method].bind(this)
-            })
+        //todo: is there a better way?
+        ['get','count','delete','post','put','addModelAction','deleteModelAction','updateModelAction','setAllModelsAction'].forEach(method=>{
+            this[method] = (overrideMethod[method] || this[method]).bind(this)
+        })
     }
     query:{[key:string]:string};
     actions: Actions;

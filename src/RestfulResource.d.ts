@@ -1,5 +1,4 @@
 import { ActionDefinition } from "./Action";
-import { Action } from "redux";
 export interface Resource<Model> {
     get(): Promise<Model[]>;
     get(id: any): Promise<Model>;
@@ -16,9 +15,7 @@ export declare type ActionName<ExtraActions> = "get" | "put" | "post" | "delete"
 export interface RestfulResourceOptions<Model, Actions> {
     baseUrl?: string;
     pathInState: string[];
-    dispatch: (action: Action & {
-        payload: any;
-    }) => void;
+    dispatch: (action: any) => void;
     getID?: (Model: Model) => string | number;
     fetch?: typeof window.fetch;
     getDataFromResponse?: (res: any, actionName: ActionName<Actions>) => any;

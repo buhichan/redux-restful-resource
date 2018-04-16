@@ -23,7 +23,7 @@ var defaultOptions = {
     getDataFromResponse: function (x) { return x; },
     requestInit: {}
 };
-var RestfulResource = (function () {
+var RestfulResource = /** @class */ (function () {
     function RestfulResource(options) {
         var _this = this;
         this.options = __assign({}, defaultOptions, options);
@@ -45,11 +45,10 @@ var RestfulResource = (function () {
                     });
                 });
         }
-        if (overrideMethod)
-            ['get', 'count', 'delete', 'post', 'put'].forEach(function (method) {
-                if (overrideMethod[method])
-                    _this[method] = overrideMethod[method].bind(_this);
-            });
+        //todo: is there a better way?
+        ['get', 'count', 'delete', 'post', 'put', 'addModelAction', 'deleteModelAction', 'updateModelAction', 'setAllModelsAction'].forEach(function (method) {
+            _this[method] = (overrideMethod[method] || _this[method]).bind(_this);
+        });
     }
     RestfulResource.prototype.withQuery = function (query) {
         this.query = query;
