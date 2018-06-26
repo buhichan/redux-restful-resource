@@ -1,15 +1,15 @@
-import {isNullOrUndefined} from "util";
 /**
  * Created by YS on 2016/11/4.
  */
 
+export type KeyPath = string|number
 
-export function getImmuOrPOJO(target,key){
+export function getImmuOrPOJO(target:any,key:KeyPath){
     if(!target) return null;
     return (typeof target.get === 'function')?
         target.get(key):target[key]
 }
-export function setImmuOrPOJO(target,data,key){
+export function setImmuOrPOJO(target:any,data:any,key:KeyPath){
     if(!target) return null;
     if(typeof target.set === 'function')
         return target.set(key,data);
@@ -19,12 +19,12 @@ export function setImmuOrPOJO(target,data,key){
     }
 }
 
-export function deepGet(obj:any,path:string){
-    const pathAsArray = path.split(/\.|\[|\]/g);
+export function deepGet(obj:any,pathStr:string){
+    const path = pathStr.split(/\.|\[|\]/g);
     let result=obj;
-    for(let i=0;i<pathAsArray.length;i++){
-        if(pathAsArray[i]!==""){
-            result = result[pathAsArray[i]];
+    for(let i=0;i<path.length;i++){
+        if(path[i]!==""){
+            result = result[path[i]];
             if(result === null || result === undefined)
                 return result;
         }
@@ -32,17 +32,17 @@ export function deepGet(obj:any,path:string){
     return result;
 }
 
-export function deepGetState(rootState,...keys){
+export function deepGetState(rootState:any,...keys:KeyPath[]){
     return keys.reduce((state,key)=>{
         return getImmuOrPOJO(state,key)
     },rootState)
 }
 
-export function deepSetState(state,data,...keys){
+export function deepSetState(state:any,data:any,...keys:KeyPath[]){
     if(!keys || !keys.length) return data;
     let nextKey = keys.shift();
     let prevState = getImmuOrPOJO(state,nextKey) || {};
-    let nextState = deepSetState(prevState,data,...keys);
+    let nextState:any = deepSetState(prevState,data,...keys);
     if(prevState !== nextState)
         return setImmuOrPOJO(state,nextState,nextKey);
     return state;
@@ -57,7 +57,7 @@ export function buildQuery(params?:{[id:string]:any}):string{
 
         if(params[key] instanceof Array){
             key = encodeURIComponent(key);
-            return params[key].map((entry)=>{
+            return params[key].map((entry:string)=>{
                 return key+"[]="+encodeURIComponent(entry)
             }).join("&")
         }else {
@@ -68,11 +68,11 @@ export function buildQuery(params?:{[id:string]:any}):string{
     }).join("&")
 }
 
-export function fillParametersInPath(path,data){
+export function fillParametersInPath(path:string,params:{[paramName:string]:any}){
     return path.replace(/(\/:\w+)(?=\/|$)/g,function(match){
-        if(!data)
+        if(!params)
             return "";
-        const value = data[match.slice(2)];
+        const value = params[match.slice(2)];
         return value?("/"+value) : ""
     });
 }

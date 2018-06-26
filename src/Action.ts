@@ -19,13 +19,12 @@ export interface ActionOption<T>{
     baseUrl:string,
     actionDef: ActionDefinition<T>,
     fetch: typeof window.fetch,
-    getDataFromResponse:(res:any,actionName?:string)=>T|T[]
-    getID
+    getDataFromResponse:(res:any,actionName?:string)=>any
 }
 
 export function RestfulActionFactory<T>(option:ActionOption<T>){
-    const {actionDef,getDataFromResponse,getID,baseUrl} = option;
-    return function RestfulAction(data?,requestInit?:RequestInit) {
+    const {actionDef,getDataFromResponse,baseUrl} = option;
+    return function RestfulAction(data?:any,requestInit?:RequestInit) {
         const nextRequestInit:RequestInit = {...requestInit};
         let url = fillParametersInPath(baseUrl+"/"+actionDef.path,data)
         if(actionDef.method)

@@ -6,22 +6,15 @@ import {RestfulActionFactory,ActionDefinition} from "./Action"
 import {buildQuery, fillParametersInPath} from "./Utils";
 import { stripTrailingSlash } from "../index";
 
-interface ResourceFilter{
-    offset:number,
-    limit:number,
-    total?:number,
-    query:{ [key:string]:string }
-}
-
-export interface Resource<Model>{
+export interface Resource<Model> {
     get():Promise<Model[]>,
-    get(id):Promise<Model>,
-    post(model:Model):Promise<Model>,
-    put(model:Model):Promise<Model>,
-    batch?()
-    head?()
-    delete(model:Model):Promise<boolean>,
-    withQuery(query:{[key:string]:string}):Resource<Model>
+    get(id:any):Promise<Model>,
+    post(model:Partial<Model>):Promise<Partial<Model>>,
+    put(model:Partial<Model>):Promise<Partial<Model>>,
+    batch?():Promise<any>
+    head?():Promise<any>
+    delete(model:Partial<Model>):Promise<boolean>,
+    withQuery(query:{[key:string]:string}):this
 }
 
 export type ActionName<ExtraActions> = "get"|"put"|"post"|"delete" | keyof ExtraActions;
@@ -30,21 +23,23 @@ export interface RestfulResourceOptions<Model,Actions>{
     baseUrl?:string,
     pathInState:string[],
     dispatch:(action:any)=>void,
-    getID?:(Model:Model)=>string|number,
+    getID?:(Model:Partial<Model>)=>string|number,
     fetch?:typeof window.fetch,
     getDataFromResponse?:(res:any,actionName:ActionName<Actions>)=>any,
     getOffsetFromResponse?:(res:any)=>number,
     actions?:(ActionDefinition<any> & {key:keyof Actions})[],
-    overrideMethod?: Partial<Resource<Model>>,
+    overrideMethod?: {
+        [key:string]:Function
+    },
     requestInit?:RequestInit,
     /**
      * whether to save the result of get() when withQuery() is used; default to false;
      */
     saveGetAllWhenFilterPresent?:boolean
     /**
-     * whether to clear query after requst, default to true;
+     * whether to clear query after successful response, default to true;
      */
-    clearQueryAfterRequest?:boolean
+    clearQueryAfterResponse?:boolean
 }
 
 const defaultOptions:Partial<RestfulResourceOptions<any,any>> = {
@@ -68,7 +63,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             ...options
         };
         this.options.baseUrl = stripTrailingSlash(this.options.baseUrl)
-        const {actions,overrideMethod,baseUrl,fetch,getDataFromResponse,getID} = this.options;
+        const {actions,overrideMethod,baseUrl,fetch,getDataFromResponse} = this.options;
         this.getBaseUrl = baseUrl.includes(":")?()=>{
             return fillParametersInPath(baseUrl,this.query)
         }:()=>baseUrl
@@ -81,39 +76,34 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
                         actionDef:action,
                         fetch,
                         getDataFromResponse,
-                        getID
                     })
                 });
         }
         //todo: is there a better way?
-        ['get','delete','post','put','addModelAction','deleteModelAction','updateModelAction','setAllModelsAction'].forEach(method=>{
-            this[method] = (overrideMethod[method] || this[method]).bind(this)
+        Object.keys(overrideMethod).forEach(method=>{
+            if(method in overrideMethod)
+                Object.defineProperty(this,method,overrideMethod[method].bind(this))
         })
     }
     query:{[key:string]:string};
     actions: Actions;
-    withQuery(query){
+    withQuery=(query:{[key:string]:string})=>{
         this.query = query;
         return this;
     }
-    afterRequest(){
-        if(this.options.clearQueryAfterRequest!==false)
+    afterResponse=()=>{
+        if(this.options.clearQueryAfterResponse!==false)
             this.query = null;
-    }
-    afterResponse(){
-
     }
     isQueryPresent(){
         return this.query && Object.keys(this.query).length
     }
-    get():Promise<Model[]>
-    get(id):Promise<Model>
-    get(id?):Promise<any>{
+    get:Resource<Model>['get']=(id?:any)=>{
         let extraURL = "";
         if(id)
             extraURL += "/"+id;
         extraURL += buildQuery(this.query);
-        const res = this.options.fetch(this.getBaseUrl()+extraURL,this.options.requestInit)
+        return this.options.fetch(this.getBaseUrl()+extraURL,this.options.requestInit)
             .then(res=>res.json()).then((res)=>{
                 const models = this.options.getDataFromResponse(res,'get') as any;
                 if(this.options.saveGetAllWhenFilterPresent || !this.isQueryPresent()){
@@ -127,11 +117,9 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
                 this.query = null;
                 return models;
         });
-        this.afterRequest();
-        return res;
     }
-    delete(data):Promise<boolean>{
-        const res = this.options.fetch(this.getBaseUrl()+"/"+this.options.getID(data)+buildQuery(this.query),{
+    delete:Resource<Model>['delete']=(data:Partial<Model>):Promise<boolean>=>{
+        return this.options.fetch(this.getBaseUrl()+"/"+this.options.getID(data)+buildQuery(this.query),{
             ...this.options.requestInit,
             method:"DELETE"
         }).then(res=>res.json()).then((res)=>{
@@ -142,12 +130,10 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
                 return true;
             }
             return false;
-        });
-        this.afterRequest();
-        return res;
+        })
     }
-    put(data):Promise<Model>{
-        const res = this.options.fetch(this.getBaseUrl()+"/"+this.options.getID(data)+buildQuery(this.query), {
+    put:Resource<Model>['put']=(data:Partial<Model>):Promise<Partial<Model>>=>{
+        return this.options.fetch(this.getBaseUrl()+"/"+this.options.getID(data)+buildQuery(this.query), {
             ...this.options.requestInit,
             method:"PUT",
             body:JSON.stringify(data)
@@ -159,11 +145,9 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             this.afterResponse();
             return model;
         });
-        this.afterRequest();
-        return res;
     }
-    post(data):Promise<Model>{
-        const res = this.options.fetch(this.getBaseUrl()+buildQuery(this.query),{
+    post:Resource<Model>['post']=(data:Partial<Model>):Promise<Partial<Model>>=>{
+        return this.options.fetch(this.getBaseUrl()+buildQuery(this.query),{
             ...this.options.requestInit,
             method:"POST",
             body:JSON.stringify(data)
@@ -175,16 +159,14 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             this.afterResponse();
             return model;
         });
-        this.afterRequest();
-        return res;
     }
-    batch(){
-        throw new Error("Not implemented")
+    batch=()=>{
+        return Promise.reject("Not implemented")
     }
-    head(){
-        throw new Error("Not implemented")
+    head=()=>{
+        return Promise.reject("Not implemented")
     }
-    public addModelAction(model){
+    public addModelAction(model:Model){
         return {
             type: "@@resource/post",
             payload: {
@@ -194,7 +176,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             }
         };
     }
-    public deleteModelAction(model){
+    public deleteModelAction(model:Partial<Model>){
         return {
             type: "@@resource/delete",
             payload: {
@@ -204,7 +186,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             }
         }
     }
-    public updateModelAction(model){
+    public updateModelAction(model:Partial<Model>){
         return {
             type: "@@resource/put",
             payload: {
@@ -214,7 +196,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             }
         };
     }
-    public setAllModelsAction(models, offset=null){
+    public setAllModelsAction(models:Model[],offset:number=null){
         return {
             type: "@@resource/get",
             payload: {

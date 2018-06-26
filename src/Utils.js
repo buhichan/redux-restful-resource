@@ -1,8 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Created by YS on 2016/11/4.
  */
+Object.defineProperty(exports, "__esModule", { value: true });
 function getImmuOrPOJO(target, key) {
     if (!target)
         return null;
@@ -21,12 +20,12 @@ function setImmuOrPOJO(target, data, key) {
     }
 }
 exports.setImmuOrPOJO = setImmuOrPOJO;
-function deepGet(obj, path) {
-    var pathAsArray = path.split(/\.|\[|\]/g);
+function deepGet(obj, pathStr) {
+    var path = pathStr.split(/\.|\[|\]/g);
     var result = obj;
-    for (var i = 0; i < pathAsArray.length; i++) {
-        if (pathAsArray[i] !== "") {
-            result = result[pathAsArray[i]];
+    for (var i = 0; i < path.length; i++) {
+        if (path[i] !== "") {
+            result = result[path[i]];
             if (result === null || result === undefined)
                 return result;
         }
@@ -81,11 +80,11 @@ function buildQuery(params) {
         }).join("&");
 }
 exports.buildQuery = buildQuery;
-function fillParametersInPath(path, data) {
+function fillParametersInPath(path, params) {
     return path.replace(/(\/:\w+)(?=\/|$)/g, function (match) {
-        if (!data)
+        if (!params)
             return "";
-        var value = data[match.slice(2)];
+        var value = params[match.slice(2)];
         return value ? ("/" + value) : "";
     });
 }
