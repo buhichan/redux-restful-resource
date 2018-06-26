@@ -39,7 +39,7 @@ var RestfulResource = /** @class */ (function () {
             if (id)
                 extraURL += "/" + id;
             extraURL += Utils_1.buildQuery(_this.query);
-            var res = _this.options.fetch(_this.getBaseUrl() + extraURL, _this.options.requestInit)
+            return _this.options.fetch(_this.getBaseUrl() + extraURL, _this.options.requestInit)
                 .then(function (res) { return res.json(); }).then(function (res) {
                 var models = _this.options.getDataFromResponse(res, 'get');
                 if (_this.options.saveGetAllWhenFilterPresent || !_this.isQueryPresent()) {
@@ -54,7 +54,6 @@ var RestfulResource = /** @class */ (function () {
                 _this.query = null;
                 return models;
             });
-            return res;
         };
         this.delete = function (data) {
             return _this.options.fetch(_this.getBaseUrl() + "/" + _this.options.getID(data) + Utils_1.buildQuery(_this.query), __assign({}, _this.options.requestInit, { method: "DELETE" })).then(function (res) { return res.json(); }).then(function (res) {
@@ -68,7 +67,7 @@ var RestfulResource = /** @class */ (function () {
             });
         };
         this.put = function (data) {
-            var res = _this.options.fetch(_this.getBaseUrl() + "/" + _this.options.getID(data) + Utils_1.buildQuery(_this.query), __assign({}, _this.options.requestInit, { method: "PUT", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
+            return _this.options.fetch(_this.getBaseUrl() + "/" + _this.options.getID(data) + Utils_1.buildQuery(_this.query), __assign({}, _this.options.requestInit, { method: "PUT", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
                 var model = _this.options.getDataFromResponse(res, 'put');
                 if (model) {
                     _this.options.dispatch(_this.updateModelAction(typeof model === 'object' ? model : data));
@@ -76,10 +75,9 @@ var RestfulResource = /** @class */ (function () {
                 _this.afterResponse();
                 return model;
             });
-            return res;
         };
         this.post = function (data) {
-            var res = _this.options.fetch(_this.getBaseUrl() + Utils_1.buildQuery(_this.query), __assign({}, _this.options.requestInit, { method: "POST", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
+            return _this.options.fetch(_this.getBaseUrl() + Utils_1.buildQuery(_this.query), __assign({}, _this.options.requestInit, { method: "POST", body: JSON.stringify(data) })).then(function (res) { return res.json(); }).then(function (res) {
                 var model = _this.options.getDataFromResponse(res, 'post');
                 if (model) {
                     _this.options.dispatch(_this.addModelAction(typeof model === 'object' ? model : data));
@@ -87,7 +85,6 @@ var RestfulResource = /** @class */ (function () {
                 _this.afterResponse();
                 return model;
             });
-            return res;
         };
         this.batch = function () {
             return Promise.reject("Not implemented");
