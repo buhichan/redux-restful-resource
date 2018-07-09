@@ -62,7 +62,7 @@ export declare class RestfulResource<Model, Actions extends {
         type: string;
         payload: {
             pathInState: string[];
-            key: (Model: Partial<Model>) => import("../../../../../../Users/buhi/Documents/js_projects/redux-restful-resource/src/Utils").KeyPath;
+            key: (Model: Partial<Model>) => string | number;
             model: Model;
         };
     };
@@ -70,7 +70,7 @@ export declare class RestfulResource<Model, Actions extends {
         type: string;
         payload: {
             pathInState: string[];
-            key: (Model: Partial<Model>) => import("../../../../../../Users/buhi/Documents/js_projects/redux-restful-resource/src/Utils").KeyPath;
+            key: (Model: Partial<Model>) => string | number;
             model: Partial<Model>;
         };
     };
@@ -78,7 +78,7 @@ export declare class RestfulResource<Model, Actions extends {
         type: string;
         payload: {
             pathInState: string[];
-            key: (Model: Partial<Model>) => import("../../../../../../Users/buhi/Documents/js_projects/redux-restful-resource/src/Utils").KeyPath;
+            key: (Model: Partial<Model>) => string | number;
             model: Partial<Model>;
         };
     };
@@ -86,7 +86,7 @@ export declare class RestfulResource<Model, Actions extends {
         type: string;
         payload: {
             pathInState: string[];
-            key: (Model: Partial<Model>) => import("../../../../../../Users/buhi/Documents/js_projects/redux-restful-resource/src/Utils").KeyPath;
+            key: (Model: Partial<Model>) => string | number;
             models: Model[];
             offset: number | null;
         };
