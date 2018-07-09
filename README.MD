@@ -1,3 +1,5 @@
+![travis ci](https://travis-ci.org/buhichan/redux-restful-resource.svg?branch=master)
+
 # A restful resource wrapper for typescript that auto sync your data with redux.
 *自动跟Redux的store同步数据的Restful Api工具类*
 

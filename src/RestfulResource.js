@@ -13,10 +13,9 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var Action_1 = require("./Action");
 var Utils_1 = require("./Utils");
-var index_1 = require("../index");
 var defaultOptions = {
     baseUrl: "/",
-    fetch: window.fetch.bind(window),
+    fetch: typeof window !== 'undefined' && 'fetch' in window ? window.fetch.bind(window) : undefined,
     actions: [],
     overrideMethod: {},
     getID: function (m) { return m['id']; },
@@ -27,6 +26,7 @@ var RestfulResource = /** @class */ (function () {
     function RestfulResource(options) {
         var _this = this;
         this.query = null;
+        this.actions = {};
         this.withQuery = function (query) {
             _this.query = query;
             return _this;
@@ -94,7 +94,7 @@ var RestfulResource = /** @class */ (function () {
             return Promise.reject("Not implemented");
         };
         this.options = __assign({}, defaultOptions, options);
-        this.options.baseUrl = index_1.stripTrailingSlash(this.options.baseUrl);
+        this.options.baseUrl = Utils_1.stripTrailingSlash(this.options.baseUrl);
         var _a = this.options, actions = _a.actions, overrideMethod = _a.overrideMethod, baseUrl = _a.baseUrl, fetch = _a.fetch;
         this.getBaseUrl = baseUrl.includes(":") ? function () {
             return Utils_1.fillParametersInPath(baseUrl, _this.query);

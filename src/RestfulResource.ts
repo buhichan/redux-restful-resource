@@ -3,8 +3,7 @@
  */
 "use strict";
 import {RestfulActionFactory,ActionDefinition} from "./Action"
-import {buildQuery, fillParametersInPath} from "./Utils";
-import { stripTrailingSlash } from "../index";
+import {buildQuery, fillParametersInPath, stripTrailingSlash} from "./Utils";
 
 export interface Resource<Model> {
     get():Promise<Model[]>,
@@ -44,7 +43,7 @@ export interface RestfulResourceOptions<Model,Actions>{
 
 const defaultOptions:Partial<RestfulResourceOptions<any,any>> = {
     baseUrl:"/",
-    fetch:window.fetch.bind(window),
+    fetch:typeof window !== 'undefined' && 'fetch' in window ? window.fetch.bind(window):undefined,
     actions:[],
     overrideMethod:{},
     getID:m=>m['id'],
@@ -58,7 +57,7 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
     options:Required<RestfulResourceOptions<Model,Actions>>;
     getBaseUrl:()=>string;
     query:{[key:string]:string} | null = null;
-    actions: Actions;
+    actions: Actions = {} as any;
     constructor(options:RestfulResourceOptions<Model,Actions>) {
         this.options = {
             ...defaultOptions,

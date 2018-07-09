@@ -21,5 +21,8 @@
     "jsx": "react",
     "lib":["es6","scripthost","dom","es2016.array.include","es2015.promise"],
     "noStrictGenericChecks":true
-  }
+  },
+  "exclude": [
+    "node_modules","**/*/__test__"
+  ]
 }
