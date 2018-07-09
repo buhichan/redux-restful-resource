@@ -5,12 +5,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 function getImmuOrPOJO(target, key) {
     if (!target)
         return null;
+    if (!key)
+        return null;
     return (typeof target.get === 'function') ?
         target.get(key) : target[key];
 }
 exports.getImmuOrPOJO = getImmuOrPOJO;
 function setImmuOrPOJO(target, data, key) {
     if (!target)
+        return null;
+    if (!key)
         return null;
     if (typeof target.set === 'function')
         return target.set(key, data);

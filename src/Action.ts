@@ -4,6 +4,7 @@
 "use strict";
 
 import {buildQuery, fillParametersInPath} from "./Utils"
+import {RestfulResourceOptions} from "./RestfulResource"
 
 export interface ActionDefinition<Args>{
     key:string,
@@ -19,7 +20,7 @@ export interface ActionOption<T>{
     baseUrl:string,
     actionDef: ActionDefinition<T>,
     fetch: typeof window.fetch,
-    getDataFromResponse:(res:any,actionName?:string)=>any
+    getDataFromResponse:Required<RestfulResourceOptions<T,any>>['getDataFromResponse']
 }
 
 export function RestfulActionFactory<T>(option:ActionOption<T>){

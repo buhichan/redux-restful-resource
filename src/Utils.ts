@@ -4,13 +4,19 @@
 
 export type KeyPath = string|number
 
-export function getImmuOrPOJO(target:any,key:KeyPath){
-    if(!target) return null;
+export function getImmuOrPOJO(target:any,key?:KeyPath){
+    if(!target) 
+        return null;
+    if(!key)
+        return null
     return (typeof target.get === 'function')?
         target.get(key):target[key]
 }
-export function setImmuOrPOJO(target:any,data:any,key:KeyPath){
-    if(!target) return null;
+export function setImmuOrPOJO(target:any,data:any,key?:KeyPath){
+    if(!target) 
+        return null;
+    if(!key)
+        return null
     if(typeof target.set === 'function')
         return target.set(key,data);
     else{
@@ -48,7 +54,7 @@ export function deepSetState(state:any,data:any,...keys:KeyPath[]){
     return state;
 }
 
-export function buildQuery(params?:{[id:string]:any}):string{
+export function buildQuery(params:{[id:string]:any}|null):string{
     if(!params) return "";
     let keys = Object.keys(params);
     if(!keys.length) return "";
@@ -68,7 +74,7 @@ export function buildQuery(params?:{[id:string]:any}):string{
     }).join("&")
 }
 
-export function fillParametersInPath(path:string,params:{[paramName:string]:any}){
+export function fillParametersInPath(path:string,params:{[paramName:string]:any}|null){
     return path.replace(/(\/:\w+)(?=\/|$)/g,function(match){
         if(!params)
             return "";

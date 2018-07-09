@@ -19,7 +19,7 @@
   "devDependencies": {
     "@types/node": "^6.0.53",
     "immutable": "4.0.0-rc.9",
-    "typescript": "^2.8.1"
+    "typescript": "^2.9.2"
   },
   "author": "buhi",
   "license": "MIT",

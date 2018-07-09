@@ -17,7 +17,7 @@ export interface Resource<Model> {
     withQuery(query:{[key:string]:string}):this
 }
 
-export type ActionName<ExtraActions> = "get"|"put"|"post"|"delete" | keyof ExtraActions;
+export type ActionName<ExtraActions> = string | Extract<keyof ExtraActions,string>;
 
 export interface RestfulResourceOptions<Model,Actions>{
     baseUrl?:string,
@@ -55,27 +55,28 @@ const defaultOptions:Partial<RestfulResourceOptions<any,any>> = {
 export type ActionInstance = (data?:any,requestInit?:RequestInit)=>Promise<any>;
 
 export class RestfulResource<Model,Actions extends {[actionName:string]:ActionInstance}> implements Resource<Model>{
-    options:RestfulResourceOptions<Model,Actions>;
+    options:Required<RestfulResourceOptions<Model,Actions>>;
     getBaseUrl:()=>string;
+    query:{[key:string]:string} | null = null;
+    actions: Actions;
     constructor(options:RestfulResourceOptions<Model,Actions>) {
         this.options = {
             ...defaultOptions,
             ...options
-        };
+        } as Required<RestfulResourceOptions<Model,Actions>>;
         this.options.baseUrl = stripTrailingSlash(this.options.baseUrl)
-        const {actions,overrideMethod,baseUrl,fetch,getDataFromResponse} = this.options;
+        const {actions,overrideMethod,baseUrl,fetch} = this.options;
         this.getBaseUrl = baseUrl.includes(":")?()=>{
             return fillParametersInPath(baseUrl,this.query)
         }:()=>baseUrl
         if(actions) {
-            this.actions = {} as any;
             if(actions instanceof Array)
                 actions.forEach(action=>{
                     this.actions[action.key] = RestfulActionFactory({
                         baseUrl,
                         actionDef:action,
                         fetch,
-                        getDataFromResponse,
+                        getDataFromResponse:this.options.getDataFromResponse,
                     })
                 });
         }
@@ -85,8 +86,6 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
                 Object.defineProperty(this,method,overrideMethod[method].bind(this))
         })
     }
-    query:{[key:string]:string};
-    actions: Actions;
     withQuery=(query:{[key:string]:string})=>{
         this.query = query;
         return this;
@@ -108,7 +107,12 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
                 const models = this.options.getDataFromResponse(res,'get') as any;
                 if(this.options.saveGetAllWhenFilterPresent || !this.isQueryPresent()){
                     if (!id) {
-                        this.options.dispatch(this.setAllModelsAction(models, this.options.getOffsetFromResponse?this.options.getOffsetFromResponse(res):null));
+                        this.options.dispatch(
+                            this.setAllModelsAction(
+                                models, 
+                                this.options.getOffsetFromResponse?this.options.getOffsetFromResponse(res):undefined
+                            )
+                        );
                     } else {
                         this.options.dispatch(this.updateModelAction(models));
                     }
@@ -196,14 +200,14 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
             }
         };
     }
-    public setAllModelsAction(models:Model[],offset:number=null){
+    public setAllModelsAction(models:Model[],offset?:number){
         return {
             type: "@@resource/get",
             payload: {
                 pathInState: this.options.pathInState,
                 key: this.options.getID,
                 models,
-                offset
+                offset:offset?offset:null
             }
         }
     }

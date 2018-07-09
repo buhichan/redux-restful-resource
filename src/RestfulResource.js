@@ -26,6 +26,7 @@ var defaultOptions = {
 var RestfulResource = /** @class */ (function () {
     function RestfulResource(options) {
         var _this = this;
+        this.query = null;
         this.withQuery = function (query) {
             _this.query = query;
             return _this;
@@ -44,7 +45,7 @@ var RestfulResource = /** @class */ (function () {
                 var models = _this.options.getDataFromResponse(res, 'get');
                 if (_this.options.saveGetAllWhenFilterPresent || !_this.isQueryPresent()) {
                     if (!id) {
-                        _this.options.dispatch(_this.setAllModelsAction(models, _this.options.getOffsetFromResponse ? _this.options.getOffsetFromResponse(res) : null));
+                        _this.options.dispatch(_this.setAllModelsAction(models, _this.options.getOffsetFromResponse ? _this.options.getOffsetFromResponse(res) : undefined));
                     }
                     else {
                         _this.options.dispatch(_this.updateModelAction(models));
@@ -94,19 +95,18 @@ var RestfulResource = /** @class */ (function () {
         };
         this.options = __assign({}, defaultOptions, options);
         this.options.baseUrl = index_1.stripTrailingSlash(this.options.baseUrl);
-        var _a = this.options, actions = _a.actions, overrideMethod = _a.overrideMethod, baseUrl = _a.baseUrl, fetch = _a.fetch, getDataFromResponse = _a.getDataFromResponse;
+        var _a = this.options, actions = _a.actions, overrideMethod = _a.overrideMethod, baseUrl = _a.baseUrl, fetch = _a.fetch;
         this.getBaseUrl = baseUrl.includes(":") ? function () {
             return Utils_1.fillParametersInPath(baseUrl, _this.query);
         } : function () { return baseUrl; };
         if (actions) {
-            this.actions = {};
             if (actions instanceof Array)
                 actions.forEach(function (action) {
                     _this.actions[action.key] = Action_1.RestfulActionFactory({
                         baseUrl: baseUrl,
                         actionDef: action,
                         fetch: fetch,
-                        getDataFromResponse: getDataFromResponse,
+                        getDataFromResponse: _this.options.getDataFromResponse,
                     });
                 });
         }
@@ -150,14 +150,13 @@ var RestfulResource = /** @class */ (function () {
         };
     };
     RestfulResource.prototype.setAllModelsAction = function (models, offset) {
-        if (offset === void 0) { offset = null; }
         return {
             type: "@@resource/get",
             payload: {
                 pathInState: this.options.pathInState,
                 key: this.options.getID,
                 models: models,
-                offset: offset
+                offset: offset ? offset : null
             }
         };
     };
