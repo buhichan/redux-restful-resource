@@ -1,4 +1,3 @@
-**/*.ts
-!**/*.d.ts
+src
 tsconfig.json
 __test__

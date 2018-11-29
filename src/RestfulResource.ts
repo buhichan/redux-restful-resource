@@ -3,18 +3,8 @@
  */
 "use strict";
 import {RestfulActionFactory,ActionDefinition} from "./Action"
-import {buildQuery, fillParametersInPath, stripTrailingSlash} from "./Utils";
-
-export interface Resource<Model> {
-    get():Promise<Model[]>,
-    get(id:any):Promise<Model>,
-    post(model:Partial<Model>):Promise<Partial<Model>>,
-    put(model:Partial<Model>):Promise<Partial<Model>>,
-    batch?():Promise<any>
-    head?():Promise<any>
-    delete(model:Partial<Model>):Promise<boolean>,
-    withQuery(query:{[key:string]:string}):this
-}
+import {buildSearch, stripTrailingSlash, fillParametersInPath} from "./Utils";
+import { postReducer, deleteReducer, putReducer, getReducer } from "./ResourceReducer";
 
 export type ActionName<ExtraActions> = string | Extract<keyof ExtraActions,string>;
 
@@ -22,192 +12,134 @@ export interface RestfulResourceOptions<Model,Actions>{
     baseUrl?:string,
     pathInState:string[],
     dispatch:(action:any)=>void,
-    getID?:(Model:Partial<Model>)=>string|number,
+    getID?:(Model:Partial<Model>)=>any,
     fetch?:typeof window.fetch,
     getDataFromResponse?:(res:any,actionName:ActionName<Actions>)=>any,
-    getOffsetFromResponse?:(res:any)=>number,
     actions?:(ActionDefinition<any> & {key:keyof Actions})[],
-    overrideMethod?: {
-        [key:string]:Function
-    },
     requestInit?:RequestInit,
-    /**
-     * whether to save the result of get() when withQuery() is used; default to false;
-     */
-    saveGetAllWhenFilterPresent?:boolean
-    /**
-     * whether to clear query after successful response, default to true;
-     */
-    clearQueryAfterResponse?:boolean
 }
 
 const defaultOptions:Partial<RestfulResourceOptions<any,any>> = {
     baseUrl:"/",
     fetch:typeof window !== 'undefined' && 'fetch' in window ? window.fetch.bind(window):undefined,
     actions:[],
-    overrideMethod:{},
     getID:m=>m['id'],
     getDataFromResponse:x=>x,
     requestInit:{}
 };
 
+type Query = {[name:string]:string}
 export type ActionInstance = (data?:any,requestInit?:RequestInit)=>Promise<any>;
 
-export class RestfulResource<Model,Actions extends {[actionName:string]:ActionInstance}> implements Resource<Model>{
-    options:Required<RestfulResourceOptions<Model,Actions>>;
-    getBaseUrl:()=>string;
-    query:{[key:string]:string} | null = null;
-    actions: Actions = {} as any;
-    constructor(options:RestfulResourceOptions<Model,Actions>) {
-        this.options = {
-            ...defaultOptions,
-            ...options
-        } as Required<RestfulResourceOptions<Model,Actions>>;
-        this.options.baseUrl = stripTrailingSlash(this.options.baseUrl)
-        const {actions,overrideMethod,baseUrl,fetch} = this.options;
-        this.getBaseUrl = baseUrl.includes(":")?()=>{
-            return fillParametersInPath(baseUrl,this.query)
-        }:()=>baseUrl
-        if(actions) {
-            if(actions instanceof Array)
-                actions.forEach(action=>{
-                    this.actions[action.key] = RestfulActionFactory({
-                        baseUrl,
-                        actionDef:action,
-                        fetch,
-                        getDataFromResponse:this.options.getDataFromResponse,
-                    })
-                });
-        }
-        //todo: is there a better way?
-        Object.keys(overrideMethod).forEach(method=>{
-            if(method in overrideMethod)
-                Object.defineProperty(this,method,overrideMethod[method].bind(this))
+export function RestfulResource<Model,Actions extends {[actionName:string]:ActionInstance}>(resourceOptions:RestfulResourceOptions<Model,Actions>){
+    const options = {
+        ...defaultOptions,
+        ...resourceOptions
+    } as Required<RestfulResourceOptions<Model,Actions>>
+    const baseUrl = stripTrailingSlash(options.baseUrl)
+    const {fetch} = options;
+    const actions:Actions = (options.actions instanceof Array) ? options.actions.reduce((actions,action)=>{
+        actions[action.key] = RestfulActionFactory({
+            baseUrl,
+            actionDef:action,
+            fetch,
+            getDataFromResponse:options.getDataFromResponse,
+        })
+        return actions
+    },{} as Actions) : {} as Actions
+
+    const getBaseUrl= (query?:Query)=>{
+        return baseUrl.includes(":")?fillParametersInPath(baseUrl,query):baseUrl
+    }
+
+    function addModelAction(model:Model){
+        return postReducer({
+            pathInState: options.pathInState,
+            key: options.getID,
+            model
         })
     }
-    withQuery=(query:{[key:string]:string})=>{
-        this.query = query;
-        return this;
+    function deleteModelAction(model:Partial<Model>){
+        return deleteReducer({
+            pathInState: options.pathInState,
+            key: options.getID,
+            model,
+        })
     }
-    afterResponse=()=>{
-        if(this.options.clearQueryAfterResponse!==false)
-            this.query = null;
+    function updateModelAction(model:Partial<Model>){
+        return putReducer({
+            pathInState: options.pathInState,
+            key: options.getID,
+            model
+        })
     }
-    isQueryPresent(){
-        return this.query && Object.keys(this.query).length
+    function setAllModelsAction(models:Model[]){
+        return getReducer({
+            pathInState: options.pathInState,
+            key: options.getID,
+            models,
+        })
     }
-    get:Resource<Model>['get']=(id?:any)=>{
-        let extraURL = "";
-        if(id)
-            extraURL += "/"+id;
-        extraURL += buildQuery(this.query);
-        return this.options.fetch(this.getBaseUrl()+extraURL,this.options.requestInit)
-            .then(res=>res.json()).then((res)=>{
-                const models = this.options.getDataFromResponse(res,'get') as any;
-                if(this.options.saveGetAllWhenFilterPresent || !this.isQueryPresent()){
+    return {
+        get:(id?:any,query?:Query)=>{
+            let extraURL = "";
+            if(id)
+                extraURL += "/"+id;
+            extraURL += buildSearch(query);
+            return options.fetch(getBaseUrl(query)+extraURL,options.requestInit)
+                .then(res=>res.json()).then((res)=>{
+                    const models = options.getDataFromResponse(res,'get') as any;
                     if (!id) {
-                        this.options.dispatch(
-                            this.setAllModelsAction(
-                                models, 
-                                this.options.getOffsetFromResponse?this.options.getOffsetFromResponse(res):undefined
+                        options.dispatch(
+                            setAllModelsAction(
+                                models
                             )
                         );
                     } else {
-                        this.options.dispatch(this.updateModelAction(models));
+                        options.dispatch(updateModelAction(models));
                     }
+                    return models;
+            });
+        },
+        delete:(data:Partial<Model>,query?:Query):Promise<boolean>=>{
+            return options.fetch(getBaseUrl(query)+"/"+options.getID(data)+buildSearch(query),{
+                ...options.requestInit,
+                method:"DELETE"
+            }).then(res=>res.json()).then((res)=>{
+                const resData = options.getDataFromResponse(res,'delete');
+                if(resData) {
+                    options.dispatch(deleteModelAction(data));
+                    return true;
                 }
-                this.afterResponse();
-                this.query = null;
-                return models;
-        });
-    }
-    delete:Resource<Model>['delete']=(data:Partial<Model>):Promise<boolean>=>{
-        return this.options.fetch(this.getBaseUrl()+"/"+this.options.getID(data)+buildQuery(this.query),{
-            ...this.options.requestInit,
-            method:"DELETE"
-        }).then(res=>res.json()).then((res)=>{
-            const resData = this.options.getDataFromResponse(res,'delete');
-            if(resData) {
-                this.options.dispatch(this.deleteModelAction(data));
-                this.afterResponse();
-                return true;
-            }
-            return false;
-        })
-    }
-    put:Resource<Model>['put']=(data:Partial<Model>):Promise<Partial<Model>>=>{
-        return this.options.fetch(this.getBaseUrl()+"/"+this.options.getID(data)+buildQuery(this.query), {
-            ...this.options.requestInit,
-            method:"PUT",
-            body:JSON.stringify(data)
-        }).then(res=>res.json()).then((res)=>{
-            const model = this.options.getDataFromResponse(res,'put');
-            if(model) {
-                this.options.dispatch(this.updateModelAction(typeof model ==='object'?model:data));
-            }
-            this.afterResponse();
-            return model;
-        });
-    }
-    post:Resource<Model>['post']=(data:Partial<Model>):Promise<Partial<Model>>=>{
-        return this.options.fetch(this.getBaseUrl()+buildQuery(this.query),{
-            ...this.options.requestInit,
-            method:"POST",
-            body:JSON.stringify(data)
-        }).then(res=>res.json()).then((res)=>{
-            const model = this.options.getDataFromResponse(res,'post');
-            if(model) {
-                this.options.dispatch(this.addModelAction(typeof model ==='object'?model:data));
-            }
-            this.afterResponse();
-            return model;
-        });
-    }
-    batch=()=>{
-        return Promise.reject("Not implemented")
-    }
-    head=()=>{
-        return Promise.reject("Not implemented")
-    }
-    public addModelAction(model:Model){
-        return {
-            type: "@@resource/post",
-            payload: {
-                pathInState: this.options.pathInState,
-                key: this.options.getID,
-                model
-            }
-        };
-    }
-    public deleteModelAction(model:Partial<Model>){
-        return {
-            type: "@@resource/delete",
-            payload: {
-                pathInState: this.options.pathInState,
-                key: this.options.getID,
-                model,
-            }
-        }
-    }
-    public updateModelAction(model:Partial<Model>){
-        return {
-            type: "@@resource/put",
-            payload: {
-                pathInState: this.options.pathInState,
-                key: this.options.getID,
-                model
-            }
-        };
-    }
-    public setAllModelsAction(models:Model[],offset?:number){
-        return {
-            type: "@@resource/get",
-            payload: {
-                pathInState: this.options.pathInState,
-                key: this.options.getID,
-                models,
-                offset:offset?offset:null
-            }
-        }
+                return false;
+            })
+        },
+        put:(data:Partial<Model>,query?:Query):Promise<Partial<Model>>=>{
+            return options.fetch(getBaseUrl(query)+"/"+options.getID(data)+buildSearch(query), {
+                ...options.requestInit,
+                method:"PUT",
+                body:JSON.stringify(data)
+            }).then(res=>res.json()).then((res)=>{
+                const model = options.getDataFromResponse(res,'put');
+                if(model) {
+                    options.dispatch(updateModelAction(typeof model ==='object'?model:data));
+                }
+                return model;
+            });
+        },
+        post:(data:Partial<Model>,query?:Query):Promise<Partial<Model>>=>{
+            return options.fetch(getBaseUrl(query)+buildSearch(query),{
+                ...options.requestInit,
+                method:"POST",
+                body:JSON.stringify(data)
+            }).then(res=>res.json()).then((res)=>{
+                const model = options.getDataFromResponse(res,'post');
+                if(model) {
+                    options.dispatch(addModelAction(typeof model ==='object'?model:data));
+                }
+                return model;
+            });
+        },
+        actions
     }
 }

@@ -1,28 +1,14 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "outDir": "dist",
     "declaration": true,
+    "strict":true,
     "sourceMap": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "removeComments": false,
-    "noImplicitAny": true,
-    "noUnusedLocals": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "noUnusedParameters": true,
-    "noImplicitThis": true,
-    "noImplicitReturns": true,
-    "noImplicitUseStrict": true,
+    "importHelpers": true,
     "keyofStringsOnly": true,
-    "noFallthroughCasesInSwitch": true,
     "jsx": "react",
-    "lib":["es6","scripthost","dom","es2016.array.include","es2015.promise"],
-    "noStrictGenericChecks":true
+    "lib":["es6","scripthost","dom","es2016.array.include","es2015.promise"]
   },
-  "exclude": [
-    "node_modules","**/*/__test__"
-  ]
+  "include": ["./src"]
 }

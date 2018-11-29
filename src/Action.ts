@@ -3,7 +3,7 @@
  */
 "use strict";
 
-import {buildQuery, fillParametersInPath} from "./Utils"
+import {buildSearch, fillParametersInPath} from "./Utils"
 import {RestfulResourceOptions} from "./RestfulResource"
 
 export interface ActionDefinition<Args>{
@@ -11,9 +11,7 @@ export interface ActionDefinition<Args>{
     path:string,
     method?:string,
     getSearch?(data:Args):{[key:string]:string},
-    getSearch?(data:Args):{[key:string]:string},
     getBody?(data:Args):any,
-    getBody?(data:Args):any
 }
 
 export interface ActionOption<T>{
@@ -33,7 +31,7 @@ export function RestfulActionFactory<T>(option:ActionOption<T>){
         if(actionDef.getBody && data)
             nextRequestInit.body = JSON.stringify(actionDef.getBody(data));
         if(actionDef.getSearch)
-            url += buildQuery(actionDef.getSearch(data));
+            url += buildSearch(actionDef.getSearch(data));
         return option.fetch(url, nextRequestInit).then(res => res.json()).then(res => {
             return getDataFromResponse(res, actionDef.key);
         });

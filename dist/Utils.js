@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Created by YS on 2016/11/4.
  */
@@ -62,7 +63,7 @@ function deepSetState(state, data) {
     return state;
 }
 exports.deepSetState = deepSetState;
-function buildQuery(params) {
+function buildSearch(params) {
     if (!params)
         return "";
     var keys = Object.keys(params);
@@ -70,20 +71,13 @@ function buildQuery(params) {
         return "";
     else
         return "?" + Object.keys(params).map(function (key) {
-            if (params[key] instanceof Array) {
-                key = encodeURIComponent(key);
-                return params[key].map(function (entry) {
-                    return key + "[]=" + encodeURIComponent(entry);
-                }).join("&");
-            }
-            else {
-                var value = typeof params[key] === 'object' ?
-                    JSON.stringify(params[key]) : params[key];
-                return encodeURIComponent(key) + "=" + encodeURIComponent(value);
-            }
+            var item = params[key];
+            var value = typeof item === 'object' ?
+                JSON.stringify(item) : item;
+            return encodeURIComponent(key) + "=" + encodeURIComponent(value);
         }).join("&");
 }
-exports.buildQuery = buildQuery;
+exports.buildSearch = buildSearch;
 function fillParametersInPath(path, params) {
     return path.replace(/(\/:\w+)(?=\/|$)/g, function (match) {
         if (!params)

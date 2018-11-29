@@ -1,12 +1,12 @@
 {
-  "name": "redux-restful-resource",
+  "name": "restateful-resource",
   "version": "0.3.13",
-  "description": "A restful api client helper, connected to redux",
-  "main": "index.js",
+  "description": "A restful api client helper",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc -p .",
-    "test": "jasmine-ts ./src/__test__/basic.ts",
-    "version": "npm run build && npm run test && git add -A",
+    "test": "jasmine-ts ./__test__/basic.ts",
+    "version": "npm run build && git add -A",
     "postversion": "git push && git push --tags"
   },
   "repository": {
@@ -15,26 +15,20 @@
   },
   "keywords": [
     "restful",
-    "redux"
+    "http",
+    "client"
   ],
   "devDependencies": {
     "@types/jasmine": "^2.8.8",
     "@types/node": "^6.0.53",
-    "@types/redux": "^3.6.0",
-    "immutable": "4.0.0-rc.9",
     "jasmine": "^3.1.0",
     "jasmine-ts": "^0.2.1",
-    "node-fetch": "^2.1.2",
-    "redux": "^4.0.0",
     "typescript": "^2.9.2"
   },
   "author": "buhi",
   "license": "MIT",
-  "peerDependencies": {
-    "immutable": "4.0.0-rc.9||*",
-    "redux": "*"
-  },
-  "resolutions": {
-    "immutable": "4.0.0-rc.9||*"
+  "peerDependencies": {},
+  "dependencies": {
+    "tslib": "*"
   }
 }

@@ -54,27 +54,20 @@ export function deepSetState(state:any,data:any,...keys:KeyPath[]){
     return state;
 }
 
-export function buildQuery(params:{[id:string]:any}|null):string{
+export function buildSearch(params?:{[id:string]:string|string[]}):string{
     if(!params) return "";
     let keys = Object.keys(params);
     if(!keys.length) return "";
     else
     return "?"+Object.keys(params).map(key=>{
-
-        if(params[key] instanceof Array){
-            key = encodeURIComponent(key);
-            return params[key].map((entry:string)=>{
-                return key+"[]="+encodeURIComponent(entry)
-            }).join("&")
-        }else {
-            const value = typeof params[key] === 'object' ?
-                JSON.stringify(params[key]) : params[key];
-            return encodeURIComponent(key) + "=" + encodeURIComponent(value)
-        }
+        const item = params[key]
+        const value = typeof item === 'object' ?
+            JSON.stringify(item) : item
+        return encodeURIComponent(key) + "=" + encodeURIComponent(value)
     }).join("&")
 }
 
-export function fillParametersInPath(path:string,params:{[paramName:string]:any}|null){
+export function fillParametersInPath(path:string,params?:{[paramName:string]:any}){
     return path.replace(/(\/:\w+)(?=\/|$)/g,function(match){
         if(!params)
             return "";
