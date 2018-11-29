@@ -1,23 +1,26 @@
 ![travis ci](https://travis-ci.org/buhichan/redux-restful-resource.svg?branch=master)
 
 # A restful resource wrapper for typescript that auto sync your data with redux.
-*自动跟Redux的store同步数据的Restful Api工具类*
+*自动跟一个store同步数据的Restful Api工具类*
 
 ```typescript
-import {Store,createStore} from "redux";
-import {fromJS} from "immutable";
 import {RestfulResource,ResourceReducer} from "redux-restful-resource";
 
-let store:Store = createStore((state,action)=>{
-    let res = state?state:fromJS({
-        people:[],
-        grid:{}
-    });
-    if(state && action && action.type==='jsAction'){
-        console.log("received action:\n",action);
+const createStore = (defaultState:any)=>{
+    let state = defaultState
+    return {
+        getState(){
+            return state
+        },
+        dispatch(mutation:any){
+            state = mutation(state)
+        }
     }
-    return ResourceReducer(res,action);
-},fromJS({people:[],grid:{}}));
+}
+
+const store = createStore({
+    people:[]
+})
 
 interface IUser{
     gender

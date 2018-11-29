@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:buhichan/redux-restful-resource.git"
+    "url": "git@gitlab.ucloudadmin.com:buhi/restateful-resource.git"
   },
   "keywords": [
     "restful",
