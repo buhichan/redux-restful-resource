@@ -26,7 +26,7 @@
     "jasmine-ts": "^0.2.1",
     "node-fetch": "^2.1.2",
     "redux": "^4.0.0",
-    "typescript": "^2.9.2"
+    "typescript": "^3.4.5"
   },
   "author": "buhi",
   "license": "MIT",

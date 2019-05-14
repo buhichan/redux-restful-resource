@@ -71,12 +71,12 @@ export class RestfulResource<Model,Actions extends {[actionName:string]:ActionIn
         if(actions) {
             if(actions instanceof Array)
                 actions.forEach(action=>{
-                    this.actions[action.key] = RestfulActionFactory({
+                    this.actions[action.key] = (RestfulActionFactory as any)({
                         baseUrl,
                         actionDef:action,
                         fetch,
                         getDataFromResponse:this.options.getDataFromResponse,
-                    })
+                    }) as any
                 });
         }
         //todo: is there a better way?

@@ -3,7 +3,7 @@ import {deepSetState, deepGetState} from "./Utils";
  * Created by YS on 2016/11/4.
  */
 
-import {List,Repeat} from "immutable"
+const {List,Repeat} = require("immutable")
 
 export interface ActionPayload<T>{
     pathInState:string[],
@@ -38,17 +38,17 @@ export function ResourceReducer<T>(rootState:any, action: { type: ActionTypes, p
             if(payload.offset===null)
                 return deepSetState(rootState, List(payload.models), ...payload.pathInState);
             else {
-                let prev = deepGetState(rootState,...payload.pathInState) as List<T>;
+                let prev = deepGetState(rootState,...payload.pathInState);
                 if(prev.size < payload.offset)
-                    prev = prev.concat(Repeat(null,payload.offset-prev.size)) as List<T>;
+                    prev = prev.concat(Repeat(null,payload.offset-prev.size));
                 return deepSetState(rootState, prev.splice(payload.offset,payload.models.length,...payload.models), ...payload.pathInState)
             }
         }
         case "@@resource/put":{
             let payload = action.payload as PostPayload<T>;
-            const list = deepGetState(rootState,...payload.pathInState) as List<T>;
+            const list = deepGetState(rootState,...payload.pathInState);
             if(!list) return deepSetState(rootState,List([payload]),...payload.pathInState);
-            let index = list.findIndex(entry=>payload.key(entry)===payload.key(payload.model));
+            let index = list.findIndex((entry:any)=>payload.key(entry)===payload.key(payload.model));
             if(index<0) return deepSetState(rootState,list.push(payload.model),...payload.pathInState);
             if(index>=0) {
                 return deepSetState(rootState, list.update(index, (old:any)=>{
@@ -58,9 +58,9 @@ export function ResourceReducer<T>(rootState:any, action: { type: ActionTypes, p
         }
         case "@@resource/post":{
             let payload = action.payload as PutPayload<T>;
-            let list = deepGetState(rootState,...payload.pathInState) as List<T>
+            let list = deepGetState(rootState,...payload.pathInState)
             if(!list)
-                list = List() as List<T>;
+                list = List();
             else if(!list.insert)
                 list = List(list);
             return deepSetState(rootState,list.insert(0,payload.model),...payload.pathInState);

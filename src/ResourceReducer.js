@@ -1,27 +1,30 @@
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var Utils_1 = require("./Utils");
 /**
  * Created by YS on 2016/11/4.
  */
-var immutable_1 = require("immutable");
+var _a = require("immutable"), List = _a.List, Repeat = _a.Repeat;
 function ResourceReducer(rootState, action) {
     switch (action.type) {
         case "@@resource/get": {
             var payload = action.payload;
             if (payload.offset === null)
-                return Utils_1.deepSetState.apply(void 0, [rootState, immutable_1.List(payload.models)].concat(payload.pathInState));
+                return Utils_1.deepSetState.apply(void 0, [rootState, List(payload.models)].concat(payload.pathInState));
             else {
                 var prev = Utils_1.deepGetState.apply(void 0, [rootState].concat(payload.pathInState));
                 if (prev.size < payload.offset)
-                    prev = prev.concat(immutable_1.Repeat(null, payload.offset - prev.size));
+                    prev = prev.concat(Repeat(null, payload.offset - prev.size));
                 return Utils_1.deepSetState.apply(void 0, [rootState, prev.splice.apply(prev, [payload.offset, payload.models.length].concat(payload.models))].concat(payload.pathInState));
             }
         }
@@ -29,7 +32,7 @@ function ResourceReducer(rootState, action) {
             var payload_1 = action.payload;
             var list = Utils_1.deepGetState.apply(void 0, [rootState].concat(payload_1.pathInState));
             if (!list)
-                return Utils_1.deepSetState.apply(void 0, [rootState, immutable_1.List([payload_1])].concat(payload_1.pathInState));
+                return Utils_1.deepSetState.apply(void 0, [rootState, List([payload_1])].concat(payload_1.pathInState));
             var index = list.findIndex(function (entry) { return payload_1.key(entry) === payload_1.key(payload_1.model); });
             if (index < 0)
                 return Utils_1.deepSetState.apply(void 0, [rootState, list.push(payload_1.model)].concat(payload_1.pathInState));
@@ -45,9 +48,9 @@ function ResourceReducer(rootState, action) {
             var payload = action.payload;
             var list = Utils_1.deepGetState.apply(void 0, [rootState].concat(payload.pathInState));
             if (!list)
-                list = immutable_1.List();
+                list = List();
             else if (!list.insert)
-                list = immutable_1.List(list);
+                list = List(list);
             return Utils_1.deepSetState.apply(void 0, [rootState, list.insert(0, payload.model)].concat(payload.pathInState));
         }
         case "@@resource/delete": {
